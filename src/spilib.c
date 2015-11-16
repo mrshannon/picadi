@@ -28,9 +28,12 @@ void spi1Init(uint8_t config, uint8_t interupt){
     TRISCbits.TRISC4 = 1;   // set SDI1 as input
     TRISCbits.TRISC3 = 0;   // set SCK1 as output;
     // Configure sample location and valid edge.
-    SSP2STAT = config & 0b11000000;
+    SSP1STAT = config & 0b11000000;
     // Turn on and configure clock polarity and speed.
-    SSP2CON1 = config & 0b00111111;
+    SSP1CON1 = config & 0b00111111;
+
+    // Turn on SPI module if desired.
+    SPI1_ENABLE = (config & 0b00100000) != 0;
 
     // Configure interrupts.
     SPI1_INT_PRIORITY = (interupt & 0b00000010) > 0;
@@ -48,9 +51,12 @@ void spi2Init(uint8_t config, uint8_t interupt){
     TRISDbits.TRISD5 = 1;   // set SDI2 as input
     TRISDbits.TRISD6 = 0;   // set SCK2 as output;
     // Configure sample location and valid edge.
-    SSP1STAT = config & 0b11000000;
-    // Turn on and configure clock polarity and speed.
-    SSP1CON1 = config & 0b00111111;
+    SSP2STAT = config & 0b11000000;
+    // Configure clock polarity and speed.
+    SSP2CON1 = config & 0b00011111;
+
+    // Turn on SPI module if desired.
+    SPI2_ENABLE = (config & 0b00100000) != 0;
 
     // Configure interrupts.
     SPI2_INT_PRIORITY = (interupt & 0b00000010) > 0;
@@ -89,7 +95,7 @@ uint8_t spi2ExchangeByte(uint8_t out){
     uint8_t tmp;
 
     // Transmit byte over SPI.
-    SPI1_BUFFER = out;
+    SPI2_BUFFER = out;
 
     // If this cause a write collision wait for previous exchange to
     // finish and throw away the received byte.
@@ -106,7 +112,7 @@ uint8_t spi2ExchangeByte(uint8_t out){
     // Return received byte.  It is done this way in an attempt to keep
     // the compiler from optimizing out the read.
     tmp = SPI2_BUFFER;
-    return tmp;
+    return SPI2_BUFFER;
 }
 
 

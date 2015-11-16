@@ -13,7 +13,9 @@
 
 
 #include <p18cxxx.h>
+#include "led.h"
 #include "oled.h"
+#include "config.h"
 #pragma config FOSC=HS1, PWRTEN=ON, BOREN=ON, BORV=2, PLLCFG=OFF
 #pragma config WDTEN=OFF, CCP2MX=PORTC, XINST=OFF
 
@@ -45,7 +47,12 @@ void main(){
     ////////////////////////////////////////////////////////////////////
     //// INITIALIZATION
     ////////////////////////////////////////////////////////////////////
+    ledInit();
+    LED_D2_ON();
     oledInit();
+    LED_D3_ON();
+    oledWriteBuffer();
+    LED_D4_ON();
 
 
     ////////////////////////////////////////////////////////////////////

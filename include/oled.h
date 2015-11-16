@@ -10,6 +10,9 @@
 //      This is a library for the SSD1306 OLED controller with a 128x64
 //      pixel monochrome display.
 //
+//      Some of this library is a modification of the Adafuit_SSD1306
+//      library written is C++ for the Arduino.
+//
 ////////////////////////////////////////////////////////////////////////
 
 
@@ -43,23 +46,11 @@ extern uint8_t oledBuffer_PAGE7[OLED_PAGE_WIDTH];
 
 void oledInit(void);
 
-
-void oledInitCom(void);
-
-
-void oledWriteInit(void);
-
-
-void oledSendCommand(uint8_t byte);
-
-
 void oledWriteBuffer(void);
-
 
 void oledNormal(void);
 
-
-void oledInvert(void);
+void oledInverse(void);
 
 
 #endif // OLED_H
