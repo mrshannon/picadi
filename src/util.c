@@ -5,6 +5,7 @@
 // Written: Sunday, November 15, 2015
 // Updated: Sunday, November 15, 2015
 // Device: PIC18F87K22
+// Compiler: C18
 // Fosc: 10 MHz
 // Instruction Clock: Fosc/4
 //
@@ -24,7 +25,7 @@ void delayxms(uint8_t ms){
     uint8_t ms4 = ms/4;
 
     // Delay multiples of 4 milliseconds.
-    Delay10KTCYx(4*PLLMUL);
+    Delay10KTCYx(ms4*PLLMUL);
 
     // Delay for remainder of milliseconds.
     // NOTE: This is done with a switch statement to encourage the
@@ -38,4 +39,15 @@ void delayxms(uint8_t ms){
         case 1:
             delay1ms();
     }
+}
+
+
+void delayxs(uint8_t s){
+
+    uint16_t i;
+
+    for (i = ((uint16_t)s)*PLLMUL; i > 0; ++i){
+        Delay10KTCYx(250);  // 1 second delay
+    }
+
 }

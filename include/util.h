@@ -4,6 +4,7 @@
 // Written: Sunday, November 15, 2015
 // Updated: Sunday, November 15, 2015
 // Device: PIC18F87K22
+// Compiler: C18
 // Fosc: 10 MHz
 // Instruction Clock: Fosc/4
 // Description:
@@ -35,6 +36,16 @@
 //          Number of milliseconds to busy wait for.
 //
 void delayxms(uint8_t ms);
+
+
+// Description:
+//      Delay by a given number of seconds.
+//
+// Input:
+//      uint_t ms:
+//          Number of seconds to busy wait for.
+//
+void delayxs(uint8_t s);
 
 
 #endif // UTIL_H
