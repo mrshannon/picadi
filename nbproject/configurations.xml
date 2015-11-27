@@ -10,11 +10,12 @@
       <itemPath>include/config.h</itemPath>
       <itemPath>include/util.h</itemPath>
       <itemPath>include/led.h</itemPath>
-      <itemPath>include/oled_picadi.h</itemPath>
+      <itemPath>include/graphics.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
                    projectFiles="true">
+      <itemPath>18f87k22_g.lkr</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -24,6 +25,7 @@
       <itemPath>src/spilib.c</itemPath>
       <itemPath>src/util.c</itemPath>
       <itemPath>src/led.c</itemPath>
+      <itemPath>src/graphics.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -31,6 +33,9 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
+  <sourceRootList>
+    <Elem>src</Elem>
+  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="default" type="2">
@@ -53,7 +58,7 @@
         </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
-          <parseOnProdLoad>false</parseOnProdLoad>
+          <parseOnProdLoad>true</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
       </compileType>

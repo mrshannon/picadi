@@ -4,8 +4,7 @@
 // Written: Thursday, November 12, 2015
 // Updated: Friday, November 13, 2015
 // Device: PIC18F87K22
-// Fosc: 10 MHz
-// Instruction Clock: Fosc/4
+// Compiler: C18
 // Description:
 //      This is a library for the SSD1306 OLED controller with a 128x64
 //      pixel monochrome display.
@@ -29,27 +28,30 @@
 
 #define OLED_WIDTH 128
 #define OLED_HEIGHT 64
-#define OLED_PAGE_WIDTH 128
-#define OLED_PAGE_HEIGHT 8
+#define OLED_SIZE (OLED_WIDTH * OLED_HEIGHT / 8)
 
 
-// Frame buffer.
-extern uint8_t oledBuffer_PAGE0[OLED_PAGE_WIDTH];
-extern uint8_t oledBuffer_PAGE1[OLED_PAGE_WIDTH];
-extern uint8_t oledBuffer_PAGE2[OLED_PAGE_WIDTH];
-extern uint8_t oledBuffer_PAGE3[OLED_PAGE_WIDTH];
-extern uint8_t oledBuffer_PAGE4[OLED_PAGE_WIDTH];
-extern uint8_t oledBuffer_PAGE5[OLED_PAGE_WIDTH];
-extern uint8_t oledBuffer_PAGE6[OLED_PAGE_WIDTH];
-extern uint8_t oledBuffer_PAGE7[OLED_PAGE_WIDTH];
-
-
+// Description:
+//      Initilize SPI2 and OLED display.
+//
 void oledInit(void);
 
+
+// Description:
+//      Write the frame buffer to the OLED display.
+//
 void oledWriteBuffer(void);
 
+
+// Description:
+//      Switch display to normal mode.
+//
 void oledNormal(void);
 
+
+// Description;
+//      Switch display to inverted mode.
+//
 void oledInverse(void);
 
 
