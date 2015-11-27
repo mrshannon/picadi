@@ -46,7 +46,7 @@ void delayxs(uint8_t s){
 
     uint16_t i;
 
-    for (i = ((uint16_t)s)*PLLMUL; i > 0; ++i){
+    for (i = ((uint16_t)s)*PLLMUL; i > 0; --i){
         Delay10KTCYx(250);  // 1 second delay
     }
 
