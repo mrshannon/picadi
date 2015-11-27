@@ -1,9 +1,10 @@
 // File: led.c
+// Header: led.h
 // Author: Michael R. Shannon
 // Written: Tuesday, November 10, 2015
 // Updated: Sunday, November 15, 2015
-// Header: led.h
-// Instruction Clock: Fosc/4
+// Device: PIC18F87K22
+// Compiler: C18
 // 
 // See header file for documentation.
 

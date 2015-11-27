@@ -3,6 +3,8 @@
 // Author: Michael R. Shannon
 // Written: Tuesday, November 03, 2015
 // Updated: Tuesday, November 03, 2015
+// Device: PIC18F87K22
+// Compiler: C18
 // Description:
 //      This is a header only library that implements something similar
 //      to the stdint.h library in C99.

@@ -4,8 +4,7 @@
 // Written: Friday, November 13, 2015
 // Updated: Friday, November 13, 2015
 // Device: PIC18F87K22
-// Fosc: 10 MHz
-// Instruction Clock: Fosc/4
+// Compiler: C18
 // Description:
 //      SPI master mode library.  It does not currently support slave
 //      mode.

@@ -5,8 +5,7 @@
 // Written: Friday, November 13, 2015
 // Updated: Friday, November 13, 2015
 // Device: PIC18F87K22
-// Fosc: 10 MHz
-// Instruction Clock: Fosc/4
+// Compiler: C18
 //
 // See header file for documentation.
 //
