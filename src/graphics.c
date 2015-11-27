@@ -279,7 +279,7 @@ void glHLine(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
 // Algorith from: http://joshbeam.com/articles/simple_line_drawing/
 void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
 
-    uint8_t xmin, xmax, y, x;
+    uint8_t min, max, y, x;
     float slope;
 
     // Shortcut 1 dot line.
@@ -288,33 +288,67 @@ void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
         return;
     }
 
-    // Find minimum and maximum x.
-    if (x1 > x0){
-        xmin = x0;
-        xmax = x1;
-    } else {
-        xmin = x1;
-        xmax = x0;
-    }
-
-    // Shortcut if line is not in the frame buffer.
-    if (xmin >= GL_FRAME_WIDTH){
-        return;
-    }
-
-    // Limit x-range to framebuffer.
-    if (xmax >= GL_FRAME_WIDTH){
-        xmax = GL_FRAME_WIDTH - 1;
-    }
-
     // Calculate slope of the line.
     slope = (float)(y1 - y0)/(float)(x1 - x0);
 
+    // Treat x as independant variable.
+    if (slope <= 1.0f){
 
-    // Draw line.
-    for (x = xmin; x <= xmax; ++x){
-        y = y0 + (uint8_t)((float)(x - x0) * slope + 0.5);
-        glPoint(x, y, color);
+        // Find minimum and maximum x.
+        if (x1 > x0){
+            min = x0;
+            max = x1;
+        } else {
+            min = x1;
+            max = x0;
+        }
+
+        // Shortcut if line is not in the frame buffer.
+        if (min >= GL_FRAME_WIDTH){
+            return;
+        }
+
+        // Limit range to framebuffer.
+        // TODO: This could be better since the aspect ratio of the
+        //       screen is 2:1.
+        if (max >= GL_FRAME_WIDTH){
+            max = GL_FRAME_WIDTH - 1;
+        }
+
+        // Draw line.
+        for (x = min; x <= max; ++x){
+            y = y0 + (uint8_t)((float)(x - x0) * slope + 0.5);
+            glPoint(x, y, color);
+        }
+    } else {
+
+        // Find minimum and maximum y.
+        if (y1 > y0){
+            min = y0;
+            max = y1;
+        } else {
+            min = y1;
+            max = y0;
+        }
+
+        // Shortcut if line is not in the frame buffer.
+        if (min >= GL_FRAME_WIDTH){
+            return;
+        }
+
+        // Limit range to framebuffer.
+        if (max >= GL_FRAME_HEIGHT){
+            max = GL_FRAME_HEIGHT - 1;
+        }
+
+        // Invert the slope.
+        slope = 1/slope;
+
+        // Draw line.
+        for (y = min; y <= max; ++y){
+            x = x0 + (uint8_t)((float)(y - y0) * slope + 0.5);
+            glPoint(x, y, color);
+        }
     }
 }
 
