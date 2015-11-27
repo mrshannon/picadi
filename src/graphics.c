@@ -14,6 +14,7 @@
 
 #include <p18cxxx.h>
 #include <string.h>
+#include <math.h>
 #include "stdint.h"
 #include "graphics.h"
 
@@ -49,6 +50,11 @@ void glPoint(uint8_t x, uint8_t y, uint8_t color){
     uint8_t byte;
     uint8_t brush;
     uint16_t idx;
+
+    // Return imediatly if pixel is off the screen.
+    if (x >= GL_FRAME_WIDTH || y >= GL_FRAME_HEIGHT){
+        return;
+    }
 
     // Compute byte to draw point in.
     byte = byteNumber(y);
@@ -88,20 +94,37 @@ void glVLine(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
     uint8_t startByte, startBit, startBrush, endByte, endBit, endBrush;
     uint16_t idx, endIdx;
 
+    // Shortcut 1 dot line.
+    if (y0 == y1){
+        glPoint(x, y0, color);
+        return;
+    }
+
+    // Return imediatly if line is completly off the framebuffer.
+    if ((x >= GL_FRAME_WIDTH) || 
+        (y0 >= GL_FRAME_HEIGHT && y1 >= GL_FRAME_HEIGHT)){
+        return;
+    }
+
+    // Constrain to the frame buffer.
+    if (y0 >= GL_FRAME_HEIGHT){
+        y0 = GL_FRAME_HEIGHT - 1;
+    }
+    if (y1 >= GL_FRAME_HEIGHT){
+        y1 = GL_FRAME_HEIGHT - 1;
+    }
+
     // Calculate start and end bytes.
     if (y1 > y0){
         startByte = byteNumber(y1);
         startBit  = bitNumber(y1, startByte);
         endByte   = byteNumber(y0);
         endBit    = bitNumber(y0, endByte);
-    } else if (y0 > y1){
+    } else { // (y0 > y1)
         startByte = byteNumber(y0);
         startBit  = bitNumber(y0, startByte);
         endByte   = byteNumber(y1);
         endBit    = bitNumber(y1, endByte);
-    } else {
-        glPoint(x, y0, color);
-        return;
     }
 
     // Find start brush.
@@ -183,6 +206,26 @@ void glHLine(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
     uint8_t byte, brush, tmp, i;
     uint16_t idx;
 
+    // Shortcut 1 dot line.
+    if (x0 == x1){
+        glPoint(x0, y, color);
+        return;
+    }
+
+    // Return imediatly if line is completly off the framebuffer.
+    if ((x0 >= GL_FRAME_WIDTH && x1 >= GL_FRAME_WIDTH) ||
+        (y >= GL_FRAME_HEIGHT)){
+        return;
+    }
+
+    // Constrain to the frame buffer.
+    if (x0 >= GL_FRAME_WIDTH){
+        x0 = GL_FRAME_WIDTH - 1;
+    }
+    if (x1 >= GL_FRAME_WIDTH){
+        x1 = GL_FRAME_WIDTH - 1;
+    }
+
     // Fix order of x0, x1.
     if (x0 > x1){
         tmp = x1;
@@ -233,7 +276,46 @@ void glHLine(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
 }
 
 
+// Algorith from: http://joshbeam.com/articles/simple_line_drawing/
 void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
+
+    uint8_t xmin, xmax, y, x;
+    float slope;
+
+    // Shortcut 1 dot line.
+    if (x0 == x1 && y0 == y1){
+        glPoint(x0, y0, color);
+        return;
+    }
+
+    // Find minimum and maximum x.
+    if (x1 > x0){
+        xmin = x0;
+        xmax = x1;
+    } else {
+        xmin = x1;
+        xmax = x0;
+    }
+
+    // Shortcut if line is not in the frame buffer.
+    if (xmin >= GL_FRAME_WIDTH){
+        return;
+    }
+
+    // Limit x-range to framebuffer.
+    if (xmax >= GL_FRAME_WIDTH){
+        xmax = GL_FRAME_WIDTH - 1;
+    }
+
+    // Calculate slope of the line.
+    slope = (float)(y1 - y0)/(float)(x1 - x0);
+
+
+    // Draw line.
+    for (x = xmin; x <= xmax; ++x){
+        y = y0 + (uint8_t)((float)(x - x0) * slope + 0.5);
+        glPoint(x, y, color);
+    }
 }
 
 
