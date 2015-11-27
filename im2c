@@ -1,0 +1,55 @@
+#!/bin/env python3
+
+import sys
+from PIL import Image
+from bitarray import bitarray
+
+
+def to_array(filename):
+    bit_array = bitarray(endian="little")
+    with Image.open(filename) as im:
+        pixels = im.load()
+        for i in range(0, im.size[0]):
+            for j in range(0, im.size[1]):
+                bit_array.append(pixels[i, j] != 0)
+    return bit_array.tobytes()
+
+
+def chunks(array, length):
+    chunk = [None]*length
+    idx = 0
+    for v in array:
+        chunk[idx] = v
+        idx = (idx + 1) % length
+        if idx == 0:
+            yield chunk
+
+
+def print_array(array):
+    print("uint8_t frameBuffer[OLED_SIZE] = {")
+    for line in chunks(array, 8):
+        print(("   " + " 0x{:02X},"*8).format(*line))
+    print("};")
+
+
+def check_size(filename):
+    with Image.open(filename) as im:
+        if im.size != (128, 64):
+            print("Expected image of 128x64, got {}x{}".format(*im.size))
+            return True
+    return False
+
+
+def convert_image(filename):
+    if check_size(filename):
+        return
+    byte_array = to_array(filename)
+    print_array(byte_array)
+
+
+if __name__ == "__main__":
+    try:
+        filename = sys.argv[1]
+    except IndexError:
+        print("{} expects at least one argument".format(sys.argv[0]))
+    convert_image(filename)
