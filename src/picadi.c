@@ -6,6 +6,7 @@
 // Written: Thursday, November 12, 2015
 // Updated: Thursday, November 12, 2015
 // Device: PIC18F87K22
+// Compiler: C18
 // Fosc: 10 MHz
 // Instruction Clock: Fosc/4
 //
@@ -13,10 +14,11 @@
 
 
 #include <p18cxxx.h>
+#include "config.h"
 #include "led.h"
 #include "oled.h"
-#include "config.h"
-#pragma config FOSC=HS1, PWRTEN=ON, BOREN=ON, BORV=2, PLLCFG=OFF
+#include "util.h"
+#pragma config FOSC=HS1, PWRTEN=ON, BOREN=ON, BORV=2, PLLCFG=ON
 #pragma config WDTEN=OFF, CCP2MX=PORTC, XINST=OFF
 
 
@@ -44,6 +46,8 @@ void lowVector(void){
 
 void main(){
 
+    uint8_t x, y, i;
+
     ////////////////////////////////////////////////////////////////////
     //// INITIALIZATION
     ////////////////////////////////////////////////////////////////////
@@ -53,6 +57,9 @@ void main(){
     LED_D3_ON();
     oledWriteBuffer();
     LED_D4_ON();
+
+    delayxs(2);
+    LED_D4_OFF();
 
 
     ////////////////////////////////////////////////////////////////////
