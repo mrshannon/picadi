@@ -54,16 +54,16 @@ void glInvert(void);
 //      location.
 //
 // Input:
-//      uint8_t x:
+//      iint16_t x:
 //          Horizontal pixel coordinate of point.
 //
-//      uint8_t y:
+//      int16_t y:
 //          Vertical pixel coordinate of point.
 //
 //      uint8_t color:
 //          Color of point (defined only).
 //
-void glPoint(uint8_t x, uint8_t y, uint8_t color);
+void glPoint(int16_t x, int16_t y, uint8_t color);
 
 
 // Description:
@@ -84,14 +84,21 @@ void glPoint(uint8_t x, uint8_t y, uint8_t color);
 //      uint8_t color:
 //          Color of line (defined only).
 //
-void glVLine(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color);
+void glVLine(int16_t x, int16_t y0, int16_t y1, uint8_t color);
 
 
-void glHLine(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color);
+void glVLine_(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color);
+
+
+void glHLine(int16_t x0, int16_t x1, int16_t y, uint8_t color);
+
+
+void glHLine_(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color);
 
 
 void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color);
 
+void glRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color);
 
 void glRectFill(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color);
 

@@ -18,6 +18,7 @@
 #include "led.h"
 #include "oled.h"
 #include "util.h"
+#include "graphics.h"
 #pragma config FOSC=HS1, PWRTEN=ON, BOREN=ON, BORV=2, PLLCFG=ON
 #pragma config WDTEN=OFF, CCP2MX=PORTC, XINST=OFF
 
@@ -46,7 +47,8 @@ void lowVector(void){
 
 void main(){
 
-    uint8_t x, y, i;
+    uint8_t i;
+    int16_t x, y;
 
     ////////////////////////////////////////////////////////////////////
     //// INITIALIZATION
@@ -60,6 +62,47 @@ void main(){
 
     delayxs(2);
     LED_D4_OFF();
+
+    /* for (i = 0; i < 100; ++i){ */
+    /*     glPoint(i, 48, GL_COLOR_INVERT); */
+    /* } */
+    /* for (i = 0; i < 100; ++i){ */
+    /*     glPoint(i, 24, GL_COLOR_WHITE); */
+    /* } */
+    /* for (i = 0; i < 100; ++i){ */
+    /*     glPoint(i, 56, GL_COLOR_BLACK); */
+    /* } */
+
+    /* glClear(); */
+    /* oledWriteBuffer(); */
+    for (i = 0; i < 64; ++i){
+        glVLine(i+25, 63, i, GL_COLOR_INVERT);
+    }
+    oledWriteBuffer();
+    /* glHLine(0, 127, 63, GL_COLOR_WHITE); */
+    /* glHLine(127, 0, 25, GL_COLOR_BLACK); */
+    /* glHLine(0, 127, 24, GL_COLOR_INVERT); */
+    glClear();
+    /* glHLine(0, 64, 0, GL_COLOR_WHITE); */
+    /* glPoint(0, 0, GL_COLOR_BLACK); */
+    /* glPoint(1, 0, GL_COLOR_WHITE); */
+    /* glPoint(2, 0, GL_COLOR_WHITE); */
+    /* glPoint(3, 0, GL_COLOR_WHITE); */
+    /* glPoint(4, 0, GL_COLOR_WHITE); */
+    /* glPoint(0, 1, GL_COLOR_WHITE); */
+    /* glPoint(0, 2, GL_COLOR_WHITE); */
+    /* glPoint(0, 3, GL_COLOR_WHITE); */
+    /* glPoint(0, 4, GL_COLOR_WHITE); */
+    /* glLine(0, 0, 127, 200, GL_COLOR_WHITE); */
+    /* glPoint(127, 20, GL_COLOR_WHITE); */
+    for (x = -10; x < GL_FRAME_WIDTH + 10; ++x){
+        glClear();
+        glHLine(x-3, x+3, x/3, GL_COLOR_WHITE);
+        glVLine(x, x/4-3, x/4+3, GL_COLOR_WHITE);
+        oledWriteBuffer();
+        /* delayxms(10); */
+    }
+
 
 
     ////////////////////////////////////////////////////////////////////

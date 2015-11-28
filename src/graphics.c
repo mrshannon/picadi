@@ -45,14 +45,13 @@ void glInvert(void){
 }
 
 
-void glPoint(uint8_t x, uint8_t y, uint8_t color){
+void glPoint(int16_t x, int16_t y, uint8_t color){
 
-    uint8_t byte;
     uint8_t brush;
-    uint16_t idx;
+    int16_t byte, idx;
 
-    // Return imediatly if pixel is off the screen.
-    if (x >= GL_FRAME_WIDTH || y >= GL_FRAME_HEIGHT){
+    // Return immediately if pixel is off the screen.
+    if (x < 0 || x >= GL_FRAME_WIDTH || y < 0 || y >= GL_FRAME_HEIGHT){
         return;
     }
 
@@ -72,7 +71,7 @@ void glPoint(uint8_t x, uint8_t y, uint8_t color){
     }
 
     // Calculate byte index.
-    idx = (uint16_t)byte + (uint16_t)x*(GL_FRAME_HEIGHT/8);
+    idx = byte + x*(GL_FRAME_HEIGHT/8);
 
     // Draw point with given color.
     switch (color){
@@ -89,10 +88,9 @@ void glPoint(uint8_t x, uint8_t y, uint8_t color){
 }
 
 
-void glVLine(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
+void glVLine(int16_t x, int16_t y0, int16_t y1, uint8_t color){
 
-    uint8_t startByte, startBit, startBrush, endByte, endBit, endBrush;
-    uint16_t idx, endIdx;
+    int16_t tmp;
 
     // Shortcut 1 dot line.
     if (y0 == y1){
@@ -100,32 +98,44 @@ void glVLine(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
         return;
     }
 
-    // Return imediatly if line is completly off the framebuffer.
-    if ((x >= GL_FRAME_WIDTH) || 
-        (y0 >= GL_FRAME_HEIGHT && y1 >= GL_FRAME_HEIGHT)){
+    // Fix order of y0 and y1.
+    if (y0 < y1){
+        tmp = y1;
+        y1 = y0;
+        y0 = tmp;
+    }
+
+    // Return immediately if line is off the screen.
+    if (x < 0 || x >= GL_FRAME_WIDTH){
+        return;
+    }
+    if (y0 < 0 || y1 >= GL_FRAME_HEIGHT){
         return;
     }
 
-    // Constrain to the frame buffer.
+    // Constrain line to the frame buffer.
     if (y0 >= GL_FRAME_HEIGHT){
-        y0 = GL_FRAME_HEIGHT - 1;
+        y0 = GL_FRAME_HEIGHT - 1;;
     }
-    if (y1 >= GL_FRAME_HEIGHT){
-        y1 = GL_FRAME_HEIGHT - 1;
+    if (y1 < 0){
+        y1 = 0;
     }
 
+    // Draw the line.
+    glVLine_(x, y0, y1, color);
+}
+
+
+void glVLine_(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
+
+    uint8_t startByte, startBit, startBrush, endByte, endBit, endBrush;
+    uint16_t idx, endIdx;
+
     // Calculate start and end bytes.
-    if (y1 > y0){
-        startByte = byteNumber(y1);
-        startBit  = bitNumber(y1, startByte);
-        endByte   = byteNumber(y0);
-        endBit    = bitNumber(y0, endByte);
-    } else { // (y0 > y1)
-        startByte = byteNumber(y0);
-        startBit  = bitNumber(y0, startByte);
-        endByte   = byteNumber(y1);
-        endBit    = bitNumber(y1, endByte);
-    }
+    startByte = byteNumber(y0);
+    startBit  = bitNumber(y0, startByte);
+    endByte   = byteNumber(y1);
+    endBit    = bitNumber(y1, endByte);
 
     // Find start brush.
     switch (startBit){
@@ -201,10 +211,10 @@ void glVLine(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
 }
 
 
-void glHLine(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
 
-    uint8_t byte, brush, tmp, i;
-    uint16_t idx;
+void glHLine(int16_t x0, int16_t x1, int16_t y, uint8_t color){
+
+    int16_t tmp;
 
     // Shortcut 1 dot line.
     if (x0 == x1){
@@ -212,26 +222,38 @@ void glHLine(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
         return;
     }
 
-    // Return imediatly if line is completly off the framebuffer.
-    if ((x0 >= GL_FRAME_WIDTH && x1 >= GL_FRAME_WIDTH) ||
-        (y >= GL_FRAME_HEIGHT)){
-        return;
-    }
-
-    // Constrain to the frame buffer.
-    if (x0 >= GL_FRAME_WIDTH){
-        x0 = GL_FRAME_WIDTH - 1;
-    }
-    if (x1 >= GL_FRAME_WIDTH){
-        x1 = GL_FRAME_WIDTH - 1;
-    }
-
-    // Fix order of x0, x1.
+    // Fix order of x0 and x1.
     if (x0 > x1){
         tmp = x1;
         x1 = x0;
         x0 = tmp;
     }
+
+    // Return immediately if line is off the screen.
+    if (y < 0 || y >= GL_FRAME_HEIGHT){
+        return;
+    }
+    if (x1 < 0 || x0 >= GL_FRAME_WIDTH){
+        return;
+    }
+
+    // Constrain line to the frame buffer.
+    if (x1 >= GL_FRAME_WIDTH){
+        x1 = GL_FRAME_WIDTH - 1;;
+    }
+    if (x0 < 0){
+        x0 = 0;
+    }
+
+    // Draw the line.
+    glHLine_(x0, x1, y, color);
+}
+
+
+void glHLine_(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
+
+    uint8_t byte, brush, tmp, i;
+    uint16_t idx;
 
     // Compute byte to draw point in.
     byte = byteNumber(y);
@@ -276,7 +298,7 @@ void glHLine(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
 }
 
 
-// Algorith from: http://joshbeam.com/articles/simple_line_drawing/
+// Algorithm from: http://joshbeam.com/articles/simple_line_drawing/
 void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
 
     uint8_t min, max, y, x;
@@ -353,7 +375,16 @@ void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
 }
 
 
+void glRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
+    // TODO: Add error checking.
+    glVLine(x0, y0, y1, color);
+    glVLine(x1, y0, y1, color);
+    glHLine(x0, x1, y0, color);
+    glHLine(x0, x1, y1, color);
+}
+
 void glRectFill(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
+
 }
 
 
