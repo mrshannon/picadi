@@ -211,7 +211,6 @@ void glVLine_(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
 }
 
 
-
 void glHLine(int16_t x0, int16_t x1, int16_t y, uint8_t color){
 
     int16_t tmp;
@@ -375,13 +374,13 @@ void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
 }
 
 
-void glRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
-    // TODO: Add error checking.
+void glRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
     glVLine(x0, y0, y1, color);
     glVLine(x1, y0, y1, color);
     glHLine(x0, x1, y0, color);
     glHLine(x0, x1, y1, color);
 }
+
 
 void glRectFill(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
 
