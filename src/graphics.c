@@ -16,9 +16,9 @@
 #include <string.h>
 #include <math.h>
 #include "stdint.h"
+#include "util.h"
 #include "graphics.h"
 
-#include "led.h"
 
 
 #define byteNumber(y) (7 - y/8)
@@ -298,80 +298,61 @@ void glHLine_(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
 }
 
 
-// Algorithm from: http://joshbeam.com/articles/simple_line_drawing/
-void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
+// Bresenham algorithm from:
+// http://members.chello.at/~easyfilter/bresenham.html
+//
+// This function does not check for out of bounds lines and lets the
+// underling glPoint function sort it out.  If more performance is
+// needed consider limiting the line to the frame buffer.
+void glLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
 
-    uint8_t min, max, y, x;
-    float slope;
+    int16_t dx, dy, sx, sy, err;
 
-    // Shortcut 1 dot line.
-    if (x0 == x1 && y0 == y1){
-        glPoint(x0, y0, color);
+    // Shortcut vertical line.
+    if (x0 == x1){
+        glVLine(x0, y0, y1, color);
         return;
     }
 
-    // Calculate slope of the line.
-    slope = (float)(y1 - y0)/(float)(x1 - x0);
+    // Shortcut horizontal line line.
+    if (y0 == y1){
+        glHLine(x0, x1, y0, color);
+        return;
+    }
 
-    // Treat x as independent variable.
-    if (slope <= 1.0f){
+    // Compute delta values in each coordinate.
+    dx =  abs16(x1 - x0);
+    dy = -abs16(y1 - y0);
 
-        // Find minimum and maximum x.
-        if (x1 > x0){
-            min = x0;
-            max = x1;
-        } else {
-            min = x1;
-            max = x0;
+    // Calculate steps in each dimension.
+    sx = x0 < x1 ? 1 : -1;
+    sy = y0 < y1 ? 1 : -1;
+
+    // Calculate initial error.
+    err = 2*(dx + dy);
+
+    // Draw the line.
+    while(1){
+        glPoint(x0, y0, color);
+        // Step x dimension.
+        if (err >= dy){
+            // Check if done.
+            if (x0 == x1){
+                break;
+            }
+            // Update error and step x.
+            err += 2*dy;
+            x0 += sx;
         }
-
-        // Shortcut if line is not in the frame buffer.
-        if (min >= GL_FRAME_WIDTH){
-            return;
-        }
-
-        // Limit range to framebuffer.
-        // TODO: This could be better since the aspect ratio of the
-        //       screen is 2:1.
-        if (max >= GL_FRAME_WIDTH){
-            max = GL_FRAME_WIDTH - 1;
-        }
-
-        // Draw line.
-        for (x = min; x <= max; ++x){
-            y = y0 + (uint8_t)((float)(x - x0) * slope + 0.5);
-            glPoint(x, y, color);
-        }
-
-    // Treat y as independent variable.
-    } else {
-
-        // Find minimum and maximum y.
-        if (y1 > y0){
-            min = y0;
-            max = y1;
-        } else {
-            min = y1;
-            max = y0;
-        }
-
-        // Shortcut if line is not in the frame buffer.
-        if (min >= GL_FRAME_WIDTH){
-            return;
-        }
-
-        // Limit range to framebuffer.
-        if (max >= GL_FRAME_HEIGHT){
-            max = GL_FRAME_HEIGHT - 1;
-        }
-
-        // Invert the slope.
-        slope = 1/slope;
-
-        // Draw line.
-        for (y = min; y <= max; ++y){
-            x = x0 + (uint8_t)((float)(y - y0) * slope + 0.5);
-            glPoint(x, y, color);
+        // Step y dimension.
+        if (err <= dx){
+            // Check if done.
+            if (y0 == y1){
+                break;
+            }
+            // Update error and step x.
+            err += 2*dx;
+            y0 += sy;
         }
     }
 }
@@ -441,6 +422,7 @@ void glRectFill(
     // Draw rectangle.
     glRectFill_(x0, y0, x1, y1, color);
 }
+
 
 void glRectFill_(
         uint8_t x0, uint8_t y0,

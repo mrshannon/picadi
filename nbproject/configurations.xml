@@ -89,7 +89,7 @@
         <property key="enable-ot" value="true"/>
         <property key="enable-ou" value="true"/>
         <property key="enable-ow" value="true"/>
-        <property key="extra-include-directories" value="include"/>
+        <property key="extra-include-directories" value=""/>
         <property key="optimization-master" value="Enable all"/>
         <property key="preprocessor-macros" value=""/>
         <property key="procedural-abstraction-passes" value="4"/>
@@ -127,7 +127,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>

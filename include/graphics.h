@@ -96,7 +96,7 @@ void glHLine(int16_t x0, int16_t x1, int16_t y, uint8_t color);
 void glHLine_(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color);
 
 
-void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color);
+void glLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 
 
 void glRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
