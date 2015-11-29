@@ -20,7 +20,6 @@
 #include "graphics.h"
 
 
-
 #define byteNumber(y) (7 - y/8)
 #define bitNumber(y, byte) ((8-byte)*8 - (y + 1))
 
@@ -548,7 +547,65 @@ void glRectFill_(
 }
 
 
-void glCircle(uint8_t xc, uint8_t r, uint8_t color){
+void glEllipse(int16_t xc, int16_t yc, uint8_t xr, uint8_t yr, uint8_t color){
+
+    int16_t x, y;
+    int32_t dx, dy, e2, err, a2, b2;
+
+    // Precomputed constants.
+    a2 = 2*(int32_t)xr*(int32_t)xr;
+    b2 = 2*(int32_t)yr*(int32_t)yr;
+
+    // Quadrant 2.
+    x = -(int16_t)xr;
+    y = 0;
+    e2 = yr;
+
+    // Error increments.
+    dx = (1 + 2*x) * e2*e2;
+    dy = x*x;
+
+    // Error of first step.
+    err = dx + dy;
+
+    // Draw ellipse.
+    do {
+        // Draw pixel in each quadrant.
+        if (y == 0){
+        glPoint(xc+x, yc+y, color);
+        glPoint(xc-x, yc+y, color);
+        } else if (x == 0){
+        glPoint(xc+x, yc+y, color);
+        glPoint(xc+x, yc-y, color);
+        } else {
+        glPoint(xc+x, yc+y, color);
+        glPoint(xc+x, yc-y, color);
+        glPoint(xc-x, yc-y, color);
+        glPoint(xc-x, yc+y, color);
+        }
+
+        // Update pixel coordinate.
+        e2 = 2*err;
+        if (e2 >= dx){
+            x++;
+            err += dx += b2;
+        }
+        if (e2 <= dy){
+            y++;
+            err += dy += a2;
+        }
+    } while (x <= 0);
+
+    // Finish ellipse where xr == 1;
+    while (y++ < (int16_t)yr){
+        glPoint(xc, yc+y, color);
+        glPoint(xc, yc-y, color);
+    }
+}
+
+
+void glCircle(int16_t xc, int16_t yc, uint8_t r, uint8_t color){
+    glEllipse(xc, yc, r, r, color);
 }
 
 

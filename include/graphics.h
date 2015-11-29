@@ -110,7 +110,10 @@ void glRectFill_(uint8_t x0, uint8_t y0,
                  uint8_t color);
 
 
-void glCircle(uint8_t xc, uint8_t r, uint8_t color);
+void glEllipse(int16_t xc, int16_t yc, uint8_t xr, uint8_t yr, uint8_t color);
+
+
+void glCircle(int16_t xc, int16_t yc, uint8_t r, uint8_t color);
 
 
 void glTriangleFBFill(uint8_t x0, uint8_t x1, uint8_t yb,
