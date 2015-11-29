@@ -18,6 +18,8 @@
 #include "stdint.h"
 #include "graphics.h"
 
+#include "led.h"
+
 
 #define byteNumber(y) (7 - y/8)
 #define bitNumber(y, byte) ((8-byte)*8 - (y + 1))
@@ -99,7 +101,7 @@ void glVLine(int16_t x, int16_t y0, int16_t y1, uint8_t color){
     }
 
     // Fix order of y0 and y1.
-    if (y0 < y1){
+    if (y0 > y1){
         tmp = y1;
         y1 = y0;
         y0 = tmp;
@@ -109,16 +111,16 @@ void glVLine(int16_t x, int16_t y0, int16_t y1, uint8_t color){
     if (x < 0 || x >= GL_FRAME_WIDTH){
         return;
     }
-    if (y0 < 0 || y1 >= GL_FRAME_HEIGHT){
+    if (y1 < 0 || y0 >= GL_FRAME_HEIGHT){
         return;
     }
 
     // Constrain line to the frame buffer.
-    if (y0 >= GL_FRAME_HEIGHT){
-        y0 = GL_FRAME_HEIGHT - 1;;
+    if (y1 >= GL_FRAME_HEIGHT){
+        y1 = GL_FRAME_HEIGHT - 1;
     }
-    if (y1 < 0){
-        y1 = 0;
+    if (y0 < 0){
+        y0 = 0;
     }
 
     // Draw the line.
@@ -132,10 +134,10 @@ void glVLine_(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
     uint16_t idx, endIdx;
 
     // Calculate start and end bytes.
-    startByte = byteNumber(y0);
-    startBit  = bitNumber(y0, startByte);
-    endByte   = byteNumber(y1);
-    endBit    = bitNumber(y1, endByte);
+    startByte = byteNumber(y1);
+    startBit  = bitNumber(y1, startByte);
+    endByte   = byteNumber(y0);
+    endBit    = bitNumber(y0, endByte);
 
     // Find start brush.
     switch (startBit){
@@ -202,8 +204,7 @@ void glVLine_(uint8_t x, uint8_t y0, uint8_t y1, uint8_t color){
         case GL_COLOR_INVERT:
             frameBuffer[idx++] ^= startBrush;
             while (idx < endIdx){
-                frameBuffer[idx] = ~frameBuffer[idx];
-                ++idx;
+                frameBuffer[idx++] ^= 0xFF;
             }
             frameBuffer[idx] ^= endBrush;
             break;
@@ -238,7 +239,7 @@ void glHLine(int16_t x0, int16_t x1, int16_t y, uint8_t color){
 
     // Constrain line to the frame buffer.
     if (x1 >= GL_FRAME_WIDTH){
-        x1 = GL_FRAME_WIDTH - 1;;
+        x1 = GL_FRAME_WIDTH - 1;
     }
     if (x0 < 0){
         x0 = 0;
@@ -272,7 +273,7 @@ void glHLine_(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
     // Calculate start byte index.
     idx = (uint16_t)byte + (uint16_t)x0*(GL_FRAME_HEIGHT/8);
 
-    // Draw point with given color.
+    // Draw line with given color.
     tmp = x1 - x0; // length of line - 1
     switch (color){
         case GL_COLOR_WHITE:
@@ -312,7 +313,7 @@ void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
     // Calculate slope of the line.
     slope = (float)(y1 - y0)/(float)(x1 - x0);
 
-    // Treat x as independant variable.
+    // Treat x as independent variable.
     if (slope <= 1.0f){
 
         // Find minimum and maximum x.
@@ -341,6 +342,8 @@ void glLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
             y = y0 + (uint8_t)((float)(x - x0) * slope + 0.5);
             glPoint(x, y, color);
         }
+
+    // Treat y as independent variable.
     } else {
 
         // Find minimum and maximum y.
@@ -382,8 +385,184 @@ void glRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
 }
 
 
-void glRectFill(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t color){
+void glRectFill(
+        int16_t x0, int16_t y0,
+        int16_t x1, int16_t y1,
+        uint8_t color){
 
+    int16_t tmp;
+
+    // Shortcut to vertical line.
+    if (x0 == x1){
+        glVLine(x0, y0, y1, color);
+    }
+
+    // Shortcut to horizontal line.
+    if (y0 == y1){
+        glHLine(x0, x1, y0, color);
+    }
+
+    // Fix order of x0 and x1.
+    if (x0 > x1){
+        tmp = x1;
+        x1 = x0;
+        x0 = tmp;
+    }
+
+    // Fix order of y0 and y1.
+    if (y0 > y1){
+        tmp = y1;
+        y1 = y0;
+        y0 = tmp;
+    }
+
+    // Return immediately if rectangle is off the screen.
+    if (x1 < 0 || x0 >= GL_FRAME_WIDTH){
+        return;
+    }
+    if (y1 < 0 || y0 >= GL_FRAME_HEIGHT){
+        return;
+    }
+
+    // Constrain rectangle to frame buffer.
+    if (x1 >= GL_FRAME_WIDTH){
+        x1 = GL_FRAME_WIDTH - 1;
+    }
+    if (x0 < 0){
+        x0 = 0;
+    }
+    if (y1 >= GL_FRAME_HEIGHT){
+        y1 = GL_FRAME_HEIGHT - 1;
+    }
+    if (y0 < 0){
+        y0 = 0;
+    }
+
+    // Draw rectangle.
+    glRectFill_(x0, y0, x1, y1, color);
+}
+
+void glRectFill_(
+        uint8_t x0, uint8_t y0,
+        uint8_t x1, uint8_t y1,
+        uint8_t color){
+
+    uint8_t startByte, startBit, startBrush, endByte, endBit, endBrush;
+    uint16_t idx, startIdx, endIdx;
+
+    // Calculate start and end bytes.
+    startByte = byteNumber(y1);
+    startBit  = bitNumber(y1, startByte);
+    endByte   = byteNumber(y0);
+    endBit    = bitNumber(y0, endByte);
+
+    // Find start brush.
+    switch (startBit){
+        case 0: startBrush = 0b11111111; break;
+        case 1: startBrush = 0b11111110; break;
+        case 2: startBrush = 0b11111100; break;
+        case 3: startBrush = 0b11111000; break;
+        case 4: startBrush = 0b11110000; break;
+        case 5: startBrush = 0b11100000; break;
+        case 6: startBrush = 0b11000000; break;
+        case 7: startBrush = 0b10000000; break;
+    }
+
+    // Find end brush.
+    switch (endBit){
+        case 0: endBrush = 0b00000001; break;
+        case 1: endBrush = 0b00000011; break;
+        case 2: endBrush = 0b00000111; break;
+        case 3: endBrush = 0b00001111; break;
+        case 4: endBrush = 0b00011111; break;
+        case 5: endBrush = 0b00111111; break;
+        case 6: endBrush = 0b01111111; break;
+        case 7: endBrush = 0b11111111; break;
+    }
+
+    // Calculate starting byte index.
+    startIdx = (uint16_t)startByte + (uint16_t)x0*(GL_FRAME_HEIGHT/8);
+
+    // Shortcut when rectangle is contained within a single byte row.
+    if (startByte == endByte){
+        idx = startIdx;
+        switch (color){
+            case GL_COLOR_WHITE:
+                for (; x0 <= x1; ++x0){
+                    frameBuffer[idx] |= (startBrush & endBrush);
+                    idx += GL_FRAME_HEIGHT/8;
+                }
+                break;
+            case GL_COLOR_BLACK:
+                for (; x0 <= x1; ++x0){
+                    frameBuffer[idx] &= ~(startBrush & endBrush);
+                    idx += GL_FRAME_HEIGHT/8;
+                }
+                break;
+            case GL_COLOR_INVERT:
+                for (; x0 <= x1; ++x0){
+                    frameBuffer[idx] ^= (startBrush & endBrush);
+                    idx += GL_FRAME_HEIGHT/8;
+                }
+                break;
+        }
+        return;
+    }
+
+    // Calculate ending index.
+    endIdx = startIdx + (uint16_t)(endByte - startByte);
+
+    // Choose color and draw rectangle.
+    switch (color){
+        case GL_COLOR_WHITE:
+            for (; x0 <= x1; ++x0){
+                idx = startIdx;
+
+                // Draw vertical line.
+                frameBuffer[idx++] |= startBrush;
+                while (idx < endIdx){
+                    frameBuffer[idx++] = 0xFF;
+                }
+                frameBuffer[idx] |= endBrush;
+
+                // Increment indices.
+                startIdx += GL_FRAME_HEIGHT/8;
+                endIdx += GL_FRAME_HEIGHT/8;
+            }
+            break;
+        case GL_COLOR_BLACK:
+            for (; x0 <= x1; ++x0){
+                idx = startIdx;
+
+                // Draw vertical line.
+                frameBuffer[idx++] &= ~startBrush;
+                while (idx < endIdx){
+                    frameBuffer[idx++] = 0x00;
+                }
+                frameBuffer[idx] &= ~endBrush;
+
+                // Increment indices.
+                startIdx += GL_FRAME_HEIGHT/8;
+                endIdx += GL_FRAME_HEIGHT/8;
+            }
+            break;
+        case GL_COLOR_INVERT:
+            for (; x0 <= x1; ++x0){
+                idx = startIdx;
+
+                // Draw vertical line.
+                frameBuffer[idx++] ^= startBrush;
+                while (idx < endIdx){
+                    frameBuffer[idx++] ^= 0xFF;
+                }
+                frameBuffer[idx] ^= endBrush;
+
+                // Increment indices.
+                startIdx += GL_FRAME_HEIGHT/8;
+                endIdx += GL_FRAME_HEIGHT/8;
+            }
+            break;
+    }
 }
 
 
