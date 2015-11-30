@@ -3,7 +3,7 @@
 // Header: util.h
 // Author: Michael R. Shannon
 // Written: Sunday, November 15, 2015
-// Updated: Sunday, November 15, 2015
+// Updated: Monday, November 30, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Fosc: 10 MHz
@@ -16,6 +16,7 @@
 
 #include <p18cxxx.h>
 #include <delays.h>
+#include <string.h>
 #include "stdint.h"
 #include "util.h"
 
@@ -50,4 +51,12 @@ void delayxs(uint8_t s){
         Delay10KTCYx(250);  // 1 second delay
     }
 
+}
+
+
+static char stringBuffer[STR_MAX_LENGTH];
+char *str(const rom char *src){
+    stringBuffer[STR_MAX_LENGTH-1] = '\0';
+    strncpypgm2ram(stringBuffer, STR(src), STR_MAX_LENGTH-1);
+    return stringBuffer;
 }
