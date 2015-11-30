@@ -2,7 +2,7 @@
 // File: util.h
 // Author: Michael R. Shannon
 // Written: Sunday, November 15, 2015
-// Updated: Sunday, November 15, 2015
+// Updated: Sunday, November 29, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Fosc: 10 MHz
@@ -20,6 +20,9 @@
 
 #ifndef UTIL_H
 #define UTIL_H
+
+
+#define PI 3.14159265f
 
 
 // Description:
