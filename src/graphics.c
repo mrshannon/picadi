@@ -790,7 +790,17 @@ void glTriangleFillFS(int16_t xs, int16_t ys0, int16_t ys1,
 }
 
 
-void glRotate(uint8_t *xPtr, uint8_t *yPtr, float theta){
+void glRotate(int16_t *xPtr, int16_t *yPtr, float s, float c){
+
+    float xTmp, yTmp;
+
+    // Rotate the points.
+    xTmp = ((float)(*xPtr))*c - ((float)(*yPtr))*s;
+    yTmp = ((float)(*xPtr))*s + ((float)(*yPtr))*c;
+
+    // Convert results back to integers and return them.
+    *xPtr = (int16_t)(xTmp + 0.5f);
+    *yPtr = (int16_t)(yTmp + 0.5f);
 }
 
 
