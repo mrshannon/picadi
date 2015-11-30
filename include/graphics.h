@@ -116,11 +116,32 @@ void glEllipse(int16_t xc, int16_t yc, uint8_t xr, uint8_t yr, uint8_t color);
 void glCircle(int16_t xc, int16_t yc, uint8_t r, uint8_t color);
 
 
-void glTriangleFBFill(uint8_t x0, uint8_t x1, uint8_t yb,
-                      uint8_t xp, uint8_t yp, uint8_t color);
+void glTriangle(int16_t x0, int16_t y0,
+                int16_t x1, int16_t y1,
+                int16_t x2, int16_t y2,
+                uint8_t color);
+
+void glTriangleFill(int16_t x0, int16_t y0,
+                    int16_t x1, int16_t y1,
+                    int16_t x2, int16_t y2,
+                    uint8_t color);
+
+void glTriangleFill_(int16_t x0, int16_t y0,
+                     int16_t x1, int16_t y1,
+                     int16_t xp, int16_t yp,
+                     uint8_t color);
+
+void glTriangleFillFS(int16_t xs, int16_t ys0, int16_t ys1,
+                      int16_t xp, int16_t yp,
+                      uint8_t color);
 
 
 void glRotate(uint8_t *xPtr, uint8_t *yPtr, float theta);
+
+
+int16_t glYIntercept(int16_t x0, int16_t y0,
+                     int16_t x1, int16_t y1,
+                     int16_t x);
 
 
 void glChar8x6LP(char ch);

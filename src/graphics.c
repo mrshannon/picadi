@@ -305,7 +305,7 @@ void glHLine_(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color){
 // needed consider limiting the line to the frame buffer.
 void glLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
 
-    int16_t dx, dy, sx, sy, err;
+    int16_t dx, dy, sx, sy, err, e2;
 
     // Shortcut vertical line.
     if (x0 == x1){
@@ -328,29 +328,30 @@ void glLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
     sy = y0 < y1 ? 1 : -1;
 
     // Calculate initial error.
-    err = 2*(dx + dy);
+    err = dx + dy;
 
     // Draw the line.
     while(1){
         glPoint(x0, y0, color);
+        e2 = 2*err;
         // Step x dimension.
-        if (err >= dy){
+        if (e2 >= dy){
             // Check if done.
             if (x0 == x1){
                 break;
             }
             // Update error and step x.
-            err += 2*dy;
+            err += dy;
             x0 += sx;
         }
         // Step y dimension.
-        if (err <= dx){
+        if (e2 <= dx){
             // Check if done.
             if (y0 == y1){
                 break;
             }
             // Update error and step x.
-            err += 2*dx;
+            err += dx;
             y0 += sy;
         }
     }
@@ -358,10 +359,21 @@ void glLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
 
 
 void glRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
+
+    // Draw rectangle.
     glVLine(x0, y0, y1, color);
     glVLine(x1, y0, y1, color);
     glHLine(x0, x1, y0, color);
     glHLine(x0, x1, y1, color);
+
+    // If the color is invert we need to draw the corners an odd number
+    // of times.
+    if (color == GL_COLOR_INVERT){
+        glPoint(x0, y0, color);
+        glPoint(x0, y1, color);
+        glPoint(x1, y1, color);
+        glPoint(x1, y0, color);
+    }
 }
 
 
@@ -547,6 +559,8 @@ void glRectFill_(
 }
 
 
+// Bresenham algorithm for Ellipses from:
+// http://members.chello.at/~easyfilter/bresenham.html
 void glEllipse(int16_t xc, int16_t yc, uint8_t xr, uint8_t yr, uint8_t color){
 
     int16_t x, y;
@@ -609,12 +623,221 @@ void glCircle(int16_t xc, int16_t yc, uint8_t r, uint8_t color){
 }
 
 
-void glTriangleFBFill(uint8_t x0, uint8_t x1, uint8_t yb,
-                      uint8_t xp, uint8_t yp, uint8_t color){
+void glTriangle(int16_t x0, int16_t y0,
+                int16_t x1, int16_t y1,
+                int16_t x2, int16_t y2,
+                uint8_t color){
+
+    // Draw triangle
+    glLine(x0, y0, x1, y1, color);
+    glLine(x1, y1, x2, y2, color);
+    glLine(x2, y2, x0, y0, color);
+
+    // If the color is invert we need to draw the corners an odd number
+    // of times.
+    if (color == GL_COLOR_INVERT){
+        glPoint(x0, y0, color);
+        glPoint(x1, y1, color);
+        glPoint(x2, y2, color);
+    }
+}
+
+
+// Triangle rasterization algorithm from:
+// http://www.sunshine2k.de/coding/java/TriangleRasterization/
+//      TriangleRasterization.html#algo3
+void glTriangleFill_(int16_t x0, int16_t y0,
+                     int16_t x1, int16_t y1,
+                     int16_t xm, int16_t ym,
+                     uint8_t color){
+
+    int16_t yi, yi01, yi10;
+
+    // Calculate the two possible y intercepts.
+    yi01 = glYIntercept(x0, y0, x1, y1, xm);
+    yi10 = glYIntercept(x1, y1, x0, y0, xm);
+
+    // Choose which y intercept to use.
+    if (abs16(ym - yi01) >= abs16(ym - yi10)){
+        yi = yi01;
+    } else {
+        yi = yi10;
+    }
+
+    // Draw each half of the triangle.
+    glTriangleFillFS(xm, ym, yi, x0, y0, color);
+    glTriangleFillFS(xm, ym, yi, x1, y1, color);
+
+    // Fix for invert color.
+    if (color == GL_COLOR_INVERT){
+        glVLine(xm, ym, yi, color);
+    }
+}
+
+
+void glTriangleFill(int16_t x0, int16_t y0,
+                    int16_t x1, int16_t y1,
+                    int16_t x2, int16_t y2,
+                    uint8_t color){
+
+    // Rearange points and call low level traingle fill function.
+    if (x1 <= x2){
+        if (x0 <= x1){
+            // x1 is middle
+            glTriangleFill_(x0, y0, x2, y2, x1, y1, color);
+        } else if (x0 >= x2){
+            // x2 is middle
+            glTriangleFill_(x0, y0, x1, y1, x2, y2, color);
+        } else {
+            // x0 is middle
+            glTriangleFill_(x1, y1, x2, y2, x0, y0, color);
+        }
+    } else { // x1 > x2
+        if (x0 <= x2){
+            // x2 is middle
+            glTriangleFill_(x0, y0, x1, y1, x2, y2, color);
+        } else if (x0 >= x1){
+            // x1 is middle
+            glTriangleFill_(x0, y0, x2, y2, x1, y1, color);
+        } else {
+            // x0 is middle
+            glTriangleFill_(x1, y1, x2, y2, x0, y0, color);
+        }
+    }
+}
+
+
+// Triangle rasterization algorithm from:
+// http://www.sunshine2k.de/coding/java/TriangleRasterization/
+//      TriangleRasterization.html#algo3
+//
+// Bresenham algorithm from:
+// http://members.chello.at/~easyfilter/bresenham.html
+void glTriangleFillFS(int16_t xs, int16_t ys0, int16_t ys1,
+        int16_t xp, int16_t yp,
+        uint8_t color){
+
+    int16_t y0, y1, dx, dy0, dy1, sx, sy0, sy1, err0, err1, e2;
+
+    // Compute delta values in each coordinate.
+    dx  =  abs16(xs - xp);
+    dy0 = -abs16(ys0 - yp);
+    dy1 = -abs16(ys1 - yp);
+
+    // Calculate steps in each dimension.
+    sx  = xp < xs ? 1 : -1;
+    sy0 = yp < ys0 ? 1 : -1;
+    sy1 = yp < ys1 ? 1 : -1;
+
+    // Calculate initial error.
+    err0 = dx + dy0;
+    err1 = dx + dy1;
+
+    // Separate y's for incrementing.
+    y0 = yp;
+    y1 = yp;
+
+    // Draw point of triangle.
+    glPoint(xp, yp, color);
+
+    // Draw last slice.
+    glVLine(xs, ys0, ys1, color);
+    xs  -= sx;
+
+    // Step one bounding line.
+    while(1){
+        e2 = 2*err0;
+        // Step y dimension.
+        if (e2 <= dx){
+            // Check if done.
+            if (y0 == ys0){
+                break;
+            }
+            // Update error and step x.
+            err0 += dx;
+            y0 += sy0;
+        }
+        // Step x dimension.
+        if (e2 >= dy0){
+            // Check if done.
+            if (xp == xs){
+                break;
+            }
+            // Update error and step x.
+            err0 += dy0;
+            xp += sx;
+
+            // Step other bounding line.
+            while(1){
+                e2 = 2*err1;
+                // Step y dimension.
+                if (e2 <= dx){
+                    // Update error and step x.
+                    err1 += dx;
+                    y1 += sy1;
+                }
+                // Step x dimension.
+                if (e2 >= dy1){
+                    // Update error.
+                    err1 += dy1;
+                    // Draw vertical line to fill triangle.
+                    glVLine(xp, y0, y1, color);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 
 void glRotate(uint8_t *xPtr, uint8_t *yPtr, float theta){
+}
+
+
+// x must be between x0 and x1.
+int16_t glYIntercept(int16_t x0, int16_t y0,
+                     int16_t x1, int16_t y1,
+                     int16_t x){
+
+    int16_t dx, dy, sx, sy, err, e2, tmp;
+
+    // Shortcut if slope is 0.
+    if (y0 == y1){
+        return y0;
+    }
+
+    // Compute delta values in each coordinate.
+    dx =  abs16(x1 - x0);
+    dy = -abs16(y1 - y0);
+
+    // Calculate steps in each dimension.
+    sx = x0 < x1 ? 1 : -1;
+    sy = y0 < y1 ? 1 : -1;
+
+    // Calculate initial error.
+    err = dx + dy;
+
+    // Draw the line.
+    while(1){
+        e2 = 2*err;
+        // Step x dimension.
+        if (e2 >= dy){
+            // Update error and step x.
+            err += dy;
+            x0 += sx;
+        }
+        // Step y dimension.
+        if (e2 <= dx){
+            // Check if done.
+            // Update error and step x.
+            err += dx;
+            y0 += sy;
+        }
+        // Check for intercept.
+        if (x0 == x){
+            return y0;
+        }
+    }
 }
 
 
