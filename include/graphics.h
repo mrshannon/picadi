@@ -2,7 +2,7 @@
 // File: graphics.h
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Friday, November 13, 2015
+// Updated: Monday, November 30, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Description:
@@ -25,11 +25,17 @@
 #define GL_COLOR_WHITE 0
 #define GL_COLOR_BLACK 1
 #define GL_COLOR_INVERT 2
+#define GL_COLOR_OVERWRITE 3
 
 
 #define GL_FRAME_WIDTH 128
 #define GL_FRAME_HEIGHT 64
 #define GL_FRAME_SIZE (GL_FRAME_WIDTH * GL_FRAME_HEIGHT / 8)
+
+
+#define GL_NUM_CHARS 96
+#define GL_CHAR_WIDTH 6
+#define GL_CHAR_HEIGHT 8
 
 
 // Description:
@@ -144,10 +150,10 @@ int16_t glYIntercept(int16_t x0, int16_t y0,
                      int16_t x);
 
 
-void glChar8x6LP(char ch);
+void glChar(uint8_t line, uint8_t column, char ch, uint8_t color);
 
 
-void glString8x6LP(uint8_t line, uint8_t x, char *str);
+void glString(uint8_t line, uint8_t column, uint8_t color, const char *str);
 
 
 #endif // GRAPHICS_H
