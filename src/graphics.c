@@ -717,8 +717,8 @@ void glTriangleFill_(int16_t x0, int16_t y0,
     int16_t yi, yi01, yi10;
 
     // Calculate the two possible y intercepts.
-    yi01 = glYIntercept(x0, y0, x1, y1, xm);
-    yi10 = glYIntercept(x1, y1, x0, y0, xm);
+    yi01 = yIntercept(x0, y0, x1, y1, xm);
+    yi10 = yIntercept(x1, y1, x0, y0, xm);
 
     // Choose which y intercept to use.
     if (abs16(ym - yi01) >= abs16(ym - yi10)){
@@ -743,7 +743,24 @@ void glTriangleFill(int16_t x0, int16_t y0,
                     int16_t x2, int16_t y2,
                     uint8_t color){
 
-    // Rearange points and call low level traingle fill function.
+    // Shortcut trivial cases.
+    // NOTE: This is needed because the glTriangleFill function is not
+    //       defined for the case where a side of the triangle is
+    //       vertical.
+    if (x0 == x1){
+        glTriangleFillFS(x0, y0, y1, x2, y2, color);
+        return;
+    }
+    if (x0 == x2){
+        glTriangleFillFS(x0, y0, y2, x1, y1, color);
+        return;
+    }
+    if (x1 == x2){
+        glTriangleFillFS(x1, y1, y2, x0, y0, color);
+        return;
+    }
+
+    // Rearrange points and call low level triangle fill function.
     if (x1 <= x2){
         if (x0 <= x1){
             // x1 is middle
@@ -848,67 +865,6 @@ void glTriangleFillFS(int16_t xs, int16_t ys0, int16_t ys1,
                     break;
                 }
             }
-        }
-    }
-}
-
-
-void glRotate(int16_t *xPtr, int16_t *yPtr, float s, float c){
-
-    float xTmp, yTmp;
-
-    // Rotate the points.
-    xTmp = ((float)(*xPtr))*c - ((float)(*yPtr))*s;
-    yTmp = ((float)(*xPtr))*s + ((float)(*yPtr))*c;
-
-    // Convert results back to integers and return them.
-    *xPtr = (int16_t)(xTmp + 0.5f);
-    *yPtr = (int16_t)(yTmp + 0.5f);
-}
-
-
-// x must be between x0 and x1.
-int16_t glYIntercept(int16_t x0, int16_t y0,
-                     int16_t x1, int16_t y1,
-                     int16_t x){
-
-    int16_t dx, dy, sx, sy, err, e2, tmp;
-
-    // Shortcut if slope is 0.
-    if (y0 == y1){
-        return y0;
-    }
-
-    // Compute delta values in each coordinate.
-    dx =  abs16(x1 - x0);
-    dy = -abs16(y1 - y0);
-
-    // Calculate steps in each dimension.
-    sx = x0 < x1 ? 1 : -1;
-    sy = y0 < y1 ? 1 : -1;
-
-    // Calculate initial error.
-    err = dx + dy;
-
-    // Draw the line.
-    while(1){
-        e2 = 2*err;
-        // Step x dimension.
-        if (e2 >= dy){
-            // Update error and step x.
-            err += dy;
-            x0 += sx;
-        }
-        // Step y dimension.
-        if (e2 <= dx){
-            // Check if done.
-            // Update error and step x.
-            err += dx;
-            y0 += sy;
-        }
-        // Check for intercept.
-        if (x0 == x){
-            return y0;
         }
     }
 }

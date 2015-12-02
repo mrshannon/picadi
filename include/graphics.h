@@ -142,9 +142,6 @@ void glTriangleFillFS(int16_t xs, int16_t ys0, int16_t ys1,
                       uint8_t color);
 
 
-void glRotate(int16_t *xPtr, int16_t *yPtr, float s, float c);
-
-
 int16_t glYIntercept(int16_t x0, int16_t y0,
                      int16_t x1, int16_t y1,
                      int16_t x);
