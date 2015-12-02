@@ -1,0 +1,28 @@
+////////////////////////////////////////////////////////////////////////
+// File: stdint.h
+// Author: Michael R. Shannon
+// Written: Tuesday, December 01, 2015
+// Updated: Tuesday, December 01, 2015
+// Device: PIC18F87K22
+// Compiler: C18
+// Description:
+//      This is a header only library that implements something similar
+//      to the stdbool.h library in C99.
+//
+////////////////////////////////////////////////////////////////////////
+
+
+#ifndef STDBOOL_H
+#define STDBOOL_H
+
+
+#define bool uint8_t
+
+#define true 1
+
+#define false 1
+
+#define __bool_true_false_are_define 1
+
+
+#endif // STDBOOL_H
