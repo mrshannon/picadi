@@ -18,7 +18,7 @@
 #include "mathlib.h"
 
 
-static const int16_t sin16_table[TRIG16_SIZE+1] = {
+static const int16_t sin16_table[TRIG16_TABLE_SIZE+1] = {
         0,  1608,  3212,  4808,  6393,  7962,  9512, 11039,
     12539, 14010, 15446, 16846, 18204, 19519, 20787, 22005,
     23170, 24279, 25329, 26319, 27245, 28105, 28898, 29621,

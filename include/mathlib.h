@@ -24,9 +24,9 @@
 
 
 // Definitions for trig functions.
-#define TRIG16_SIZE 32
-#define TRIG16_CYCLE 0x3FFF // 16383
-#define TRIG16_MAX_ANGLE 
+#define TRIG16_TABLE_SIZE 32
+#define TRIG16_CYCLE 0x4000 // 16384
+#define TRIG16_MAX_ANGLE 0x3FFF // 16383
 #define TRIG16_MIN_ANGLE 0
 
 
@@ -89,6 +89,7 @@ int16_t cos16(int16_t theta);
 int32_t tan16(int16_t theta);
 
 
+#define toDeg(theta) (((int32_t)theta)*360L/TRIG16_CYCLE)
 #define rotate16(xPtr, yPtr, theta) \
     (rotate_(xPtr, yPtr, sin16(theta), cos16(theta)))
 void rotate16_(int16_t *xPtr, int16_t *yPtr,  int16_t s, int16_t c);
