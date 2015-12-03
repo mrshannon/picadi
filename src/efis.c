@@ -20,6 +20,7 @@
 #include "util.h"
 #include "efis.h"
 
+
 #define CENTER_X GL_FRAME_WIDTH/2
 #define CENTER_Y GL_FRAME_HEIGHT/2
 #define PLANE_RADIUS 3
@@ -28,10 +29,7 @@
 
 void efisDraw(int16_t yaw, int16_t pitch, int16_t roll){
 
-    int16_t rollSine, rollCosine;
-    rollSine = sin16(roll);
-    rollCosine = cos16(roll);
-    efisDrawAI(pitch, rollSine, rollCosine);
+    efisDrawAI(pitch, roll);
     efisDrawCompass(yaw);
 }
 
@@ -39,6 +37,8 @@ void efisDraw(int16_t yaw, int16_t pitch, int16_t roll){
 void efisDrawCompass(int16_t yaw){
 
     char buffer[4];
+
+    // Convert yaw to degrees and confine to 0 to 360 degrees.
     yaw = toDeg(yaw);
     while (yaw < 0){
         yaw += 360;
@@ -46,30 +46,41 @@ void efisDrawCompass(int16_t yaw){
     while (yaw > 360){
         yaw -= 360;
     }
+
+    // Print yaw angle (heading) to buffer.
     sprintf(buffer, STR("%03d"), yaw);
     buffer[3] = '\0';
+
+    // Write string buffer to the frame buffer.
     glRectFill_(CENTER_X-GL_CHAR_WIDTH-2, 0,
                 CENTER_X+2*GL_CHAR_WIDTH+2, GL_CHAR_HEIGHT+2,
                 GL_COLOR_BLACK);
     glString(7, CENTER_X-GL_CHAR_WIDTH, GL_COLOR_WHITE, buffer);
-    /* glChar(7, CENTER_X-GL_CHAR_WIDTH, '0', GL_COLOR_WHITE); */
-    /* glChar(7, CENTER_X, '9', GL_COLOR_WHITE); */
-    /* glChar(7, CENTER_X+GL_CHAR_WIDTH, '0', GL_COLOR_WHITE); */
-
 }
 
 
-void efisDrawAI(int16_t pitch, int16_t rollSin, int16_t rollCos){
+void efisDrawAI(int16_t pitch, int16_t roll){
+
+    int16_t rollSin, rollCos;
+    rollSin = sin16(roll);
+    rollCos = cos16(roll);
+
     efisDrawHorizon(pitch, rollSin, rollCos);
     efisDrawPlane();
     efisDrawPitch(pitch, rollSin, rollCos);
+    efisDrawRoll(roll);
 }
 
 
 void efisDrawPlane(){
+    // The circle for the center.
     glCircle(CENTER_X, CENTER_Y, PLANE_RADIUS, GL_COLOR_INVERT);
+
+    // The vertical up line.
     glVLine_(CENTER_X, CENTER_Y+PLANE_RADIUS+1, 
              CENTER_Y+PLANE_RADIUS+1+5, GL_COLOR_INVERT);
+
+    // The two horizontal lines representing the wings.
     glHLine_(CENTER_X-PLANE_RADIUS-1-5, CENTER_X-PLANE_RADIUS-1,
              CENTER_Y, GL_COLOR_INVERT);
     glHLine_(CENTER_X+PLANE_RADIUS+1, CENTER_X+PLANE_RADIUS+1+5,
@@ -123,6 +134,61 @@ void efisDrawPitch(int16_t pitch, int16_t rollSin, int16_t rollCos){
         // Decrement pitch line by 10/PIX_PER_DEG degrees.
         max -= 10;
     }
+}
+
+
+#define ROLL_ANGLE_START ((int16_t)(((int32_t)TRIG16_CYCLE)*(-60)/360))
+#define ROLL_ANGLE_STOP ((int16_t)(((int32_t)TRIG16_CYCLE)*(+60)/360))
+#define ROLL_ANGLE_STEP ((int16_t)(((int32_t)TRIG16_CYCLE)*(60)/360))
+void efisDrawRoll(int16_t roll){
+
+    // Draw pointing triangle.
+    glTriangleFill(CENTER_X-3, CENTER_Y+16,
+                   CENTER_X+3, CENTER_Y+16,
+                   CENTER_X, CENTER_Y+20, 
+                   GL_COLOR_INVERT);
+
+    // Draw each tick mark.
+    efisDrawRollLine(fromDeg(-90) + roll, 10);
+    efisDrawRollLine(fromDeg(-60) + roll, 10);
+    efisDrawRollLine(fromDeg(-45) + roll,  5);
+    efisDrawRollLine(fromDeg(-30) + roll, 10);
+    efisDrawRollLine(fromDeg(-20) + roll,  5);
+    efisDrawRollLine(fromDeg(-10) + roll,  5);
+    efisDrawRollLine(fromDeg(  0) + roll, 10);
+    efisDrawRollLine(fromDeg(+10) + roll,  5);
+    efisDrawRollLine(fromDeg(+20) + roll,  5);
+    efisDrawRollLine(fromDeg(+30) + roll, 10);
+    efisDrawRollLine(fromDeg(+45) + roll,  5);
+    efisDrawRollLine(fromDeg(+60) + roll, 10);
+    efisDrawRollLine(fromDeg(+90) + roll, 10);
+}
+
+
+void efisDrawRollLine(int16_t theta, uint8_t length){
+
+    int16_t x0, y0, x1, y1, s, c;
+
+    // Generate non rotated tick mark coordinates.
+    x0 = 0;
+    x1 = 0;
+    y0 = CENTER_Y - 10;
+    y1 = CENTER_Y - 10 + (int16_t)(length-1);
+
+    // Rotate the tick mark.
+    s = sin16(theta);
+    c = cos16(theta);
+    rotate16_(&x0, &y0, s, c);
+    rotate16_(&x1, &y1, s, c);
+
+    // Shift to proper location.
+    x0 += CENTER_X;
+    x1 += CENTER_X;
+    y0 += CENTER_Y;
+    y1 += CENTER_Y;
+
+    // Plot the tick mark.
+    glLine(x0, y0, x1, y1, GL_COLOR_INVERT);
 }
 
 
@@ -348,10 +414,4 @@ void efisDrawHorizonAsPolygon(uint8_t xa[4], uint8_t ya[4], uint8_t color){
         glTriangleFillFVS(xa[peak], ya[peak], ya[!peak],
                           xa[!peak], ya[!peak], color);
     }
-}
-
-
-
-
-void efisRoll(float roll){
 }
