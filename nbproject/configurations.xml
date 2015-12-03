@@ -12,6 +12,9 @@
       <itemPath>include/led.h</itemPath>
       <itemPath>include/graphics.h</itemPath>
       <itemPath>include/mathlib.h</itemPath>
+      <itemPath>include/efis.h</itemPath>
+      <itemPath>include/lcd.h</itemPath>
+      <itemPath>include/stdbool.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -28,6 +31,8 @@
       <itemPath>src/led.c</itemPath>
       <itemPath>src/graphics.c</itemPath>
       <itemPath>src/mathlib.c</itemPath>
+      <itemPath>src/efis.c</itemPath>
+      <itemPath>src/lcd.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -35,9 +40,6 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
   </logicalFolder>
-  <sourceRootList>
-    <Elem>src</Elem>
-  </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="default" type="2">
