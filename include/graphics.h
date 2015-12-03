@@ -2,7 +2,7 @@
 // File: graphics.h
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Monday, November 30, 2015
+// Updated: Wednesday, December 02, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Description:
@@ -18,6 +18,10 @@
 ////////////////////////////////////////////////////////////////////////
 
 
+#include "stdint.h"
+#include "stdbool.h"
+
+
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
@@ -31,6 +35,17 @@
 #define GL_FRAME_WIDTH 128
 #define GL_FRAME_HEIGHT 64
 #define GL_FRAME_SIZE (GL_FRAME_WIDTH * GL_FRAME_HEIGHT / 8)
+#define GL_MIN_X 0
+#define GL_MIN_Y 0
+#define GL_MAX_X (GL_FRAME_WIDTH-1)
+#define GL_MAX_Y (GL_FRAME_HEIGHT-1)
+
+
+// Clip codes.
+#define GL_CCT 0b00001000   // top
+#define GL_CCB 0b00000100   // bottom
+#define GL_CCR 0b00000010   // right
+#define GL_CCL 0b00000001   // left
 
 
 #define GL_NUM_CHARS 96
@@ -105,6 +120,13 @@ void glHLine_(uint8_t x0, uint8_t x1, uint8_t y, uint8_t color);
 void glLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 
 
+bool glClipLine(int16_t *x0_ptr, int16_t *y0_ptr,
+                int16_t *x1_ptr, int16_t *y1_ptr);
+
+
+uint8_t glClipCode(int16_t x, int16_t y);
+
+
 void glRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 
 
@@ -137,14 +159,9 @@ void glTriangleFill_(int16_t x0, int16_t y0,
                      int16_t xp, int16_t yp,
                      uint8_t color);
 
-void glTriangleFillFS(int16_t xs, int16_t ys0, int16_t ys1,
-                      int16_t xp, int16_t yp,
-                      uint8_t color);
-
-
-int16_t glYIntercept(int16_t x0, int16_t y0,
-                     int16_t x1, int16_t y1,
-                     int16_t x);
+void glTriangleFillFVS(int16_t xs, int16_t ys0, int16_t ys1,
+                       int16_t xp, int16_t yp,
+                       uint8_t color);
 
 
 void glChar(uint8_t line, uint8_t column, char ch, uint8_t color);

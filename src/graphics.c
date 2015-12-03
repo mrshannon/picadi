@@ -3,7 +3,7 @@
 // Header: graphics.h
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Monday, November 30, 2015
+// Updated: Wednesday, December 02, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -16,6 +16,7 @@
 #include <string.h>
 #include <math.h>
 #include "stdint.h"
+#include "stdbool.h"
 #include "util.h"
 #include "mathlib.h"
 #include "graphics.h"
@@ -421,6 +422,97 @@ void glLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
 }
 
 
+// This uses the Cohen-Sutherland method.
+// NOTE: Based on implementation at:
+// https://en.wikipedia.org/wiki/Cohen-Sutherland_algorithm
+bool glClipLine(int16_t *x0_ptr, int16_t *y0_ptr,
+                int16_t *x1_ptr, int16_t *y1_ptr){
+
+    int32_t x, y, x0, y0, x1, y1;
+    uint8_t clipCode, clipCode0, clipCode1;
+
+    x0 = *x0_ptr;
+    y0 = *y0_ptr;
+    x1 = *x1_ptr;
+    y1 = *y1_ptr;
+
+    while (true){
+
+        clipCode0 = glClipCode(*x0_ptr, *y0_ptr);
+        clipCode1 = glClipCode(*x1_ptr, *y1_ptr);
+
+        // Line is completely inside the frame buffer, we are done.
+        if (clipCode0 == 0 && clipCode1 == 0){
+            return false;
+        }
+
+        // Line is completely outside the frame buffer, we are done.
+        if (clipCode0 & clipCode1){ // one or more bits in common
+            return true;
+        }
+
+        // Choose which end to handle this time.
+        clipCode = clipCode0 ? clipCode0 : clipCode1;
+
+        // Adjust point.
+        if (clipCode & GL_CCT){         // point is above frame buffer
+            x = x0 + ((x1 - x0)*((int32_t)(GL_FRAME_HEIGHT-1) - y0))/(y1 - y0);
+            y = GL_FRAME_HEIGHT-1;
+        } else if (clipCode & GL_CCB){  // point is below frame buffer
+            x = x0 + ((x1 - x0)*(-y0))/(y1 - y0);
+            y = 0;
+        } else if (clipCode & GL_CCR){  // point is right of frame buffer
+            y = y0 + ((y1 - y0)*((int32_t)(GL_FRAME_WIDTH-1) - x0))/(x1 - x0);
+            x = GL_FRAME_WIDTH-1;
+        } else {                        // point is left of frame buffer
+            y = y0 + ((y1 - y0)*(-x0))/(x1 - x0);
+            x = 0;
+        }
+
+        // Save the result.
+        if (clipCode == clipCode0){
+            x0 = x;
+            y0 = y;
+            *x0_ptr = x0;
+            *y0_ptr = y0;
+        } else {
+            x1 = x;
+            y1 = y;
+            *x1_ptr = x1;
+            *y1_ptr = y1;
+        }
+    }
+}
+
+
+uint8_t glClipCode(int16_t x, int16_t y){
+
+    uint8_t clipCode = 0x00;
+
+    // Point is above.
+    if (y > GL_FRAME_HEIGHT-1){
+        clipCode |= GL_CCT;
+    }
+
+    // Point is below.
+    if (y < 0){
+        clipCode |= GL_CCB;
+    }
+
+    // Point is on right.
+    if (x > GL_FRAME_WIDTH){
+        clipCode |= GL_CCR;
+    }
+
+    // Point is on left.
+    if (x < 0){
+        clipCode |= GL_CCL;
+    }
+
+    return clipCode;
+}
+
+
 void glRect(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color){
 
     // Draw rectangle.
@@ -728,8 +820,8 @@ void glTriangleFill_(int16_t x0, int16_t y0,
     }
 
     // Draw each half of the triangle.
-    glTriangleFillFS(xm, ym, yi, x0, y0, color);
-    glTriangleFillFS(xm, ym, yi, x1, y1, color);
+    glTriangleFillFVS(xm, ym, yi, x0, y0, color);
+    glTriangleFillFVS(xm, ym, yi, x1, y1, color);
 
     // Fix for invert color.
     if (color == GL_COLOR_INVERT){
@@ -748,15 +840,15 @@ void glTriangleFill(int16_t x0, int16_t y0,
     //       defined for the case where a side of the triangle is
     //       vertical.
     if (x0 == x1){
-        glTriangleFillFS(x0, y0, y1, x2, y2, color);
+        glTriangleFillFVS(x0, y0, y1, x2, y2, color);
         return;
     }
     if (x0 == x2){
-        glTriangleFillFS(x0, y0, y2, x1, y1, color);
+        glTriangleFillFVS(x0, y0, y2, x1, y1, color);
         return;
     }
     if (x1 == x2){
-        glTriangleFillFS(x1, y1, y2, x0, y0, color);
+        glTriangleFillFVS(x1, y1, y2, x0, y0, color);
         return;
     }
 
@@ -793,7 +885,7 @@ void glTriangleFill(int16_t x0, int16_t y0,
 //
 // Bresenham algorithm from:
 // http://members.chello.at/~easyfilter/bresenham.html
-void glTriangleFillFS(int16_t xs, int16_t ys0, int16_t ys1,
+void glTriangleFillFVS(int16_t xs, int16_t ys0, int16_t ys1,
         int16_t xp, int16_t yp,
         uint8_t color){
 
