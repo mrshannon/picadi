@@ -88,7 +88,8 @@ int16_t cos16(int16_t theta);
 //
 int32_t tan16(int16_t theta);
 
-
+#define fromDeg(theta) \
+    ((int16_t)(((int32_t)TRIG16_CYCLE)*((int32_t)theta)/360L))
 #define toDeg(theta) (((int32_t)theta)*360L/TRIG16_CYCLE)
 #define rotate16(xPtr, yPtr, theta) \
     (rotate_(xPtr, yPtr, sin16(theta), cos16(theta)))
