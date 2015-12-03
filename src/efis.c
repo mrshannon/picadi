@@ -13,45 +13,194 @@
 
 
 #include <p18cxxx.h>
-#include <math.h>
+#include <stdio.h>
 #include "stdint.h"
 #include "stdbool.h"
 #include "mathlib.h"
+#include "util.h"
 #include "efis.h"
 
-#include "led.h"
+#define CENTER_X GL_FRAME_WIDTH/2
+#define CENTER_Y GL_FRAME_HEIGHT/2
+#define PLANE_RADIUS 3
+#define PIX_PER_DEG 2   // pixels per degree of pitch
 
 
 void efisDraw(int16_t yaw, int16_t pitch, int16_t roll){
 
-    efisDrawHorizon(pitch, roll);
-    glCircle(63, 31, 5, GL_COLOR_INVERT);
+    int16_t rollSine, rollCosine;
+    rollSine = sin16(roll);
+    rollCosine = cos16(roll);
+    efisDrawAI(pitch, rollSine, rollCosine);
+    efisDrawCompass(yaw);
+}
+
+
+void efisDrawCompass(int16_t yaw){
+
+    char buffer[4];
+    yaw = toDeg(yaw);
+    while (yaw < 0){
+        yaw += 360;
+    }
+    while (yaw > 360){
+        yaw -= 360;
+    }
+    sprintf(buffer, STR("%03d"), yaw);
+    buffer[3] = '\0';
+    glRectFill_(CENTER_X-GL_CHAR_WIDTH-2, 0,
+                CENTER_X+2*GL_CHAR_WIDTH+2, GL_CHAR_HEIGHT+2,
+                GL_COLOR_BLACK);
+    glString(7, CENTER_X-GL_CHAR_WIDTH, GL_COLOR_WHITE, buffer);
+    /* glChar(7, CENTER_X-GL_CHAR_WIDTH, '0', GL_COLOR_WHITE); */
+    /* glChar(7, CENTER_X, '9', GL_COLOR_WHITE); */
+    /* glChar(7, CENTER_X+GL_CHAR_WIDTH, '0', GL_COLOR_WHITE); */
 
 }
 
 
-void efisAI(float pitch, float roll){
+void efisDrawAI(int16_t pitch, int16_t rollSin, int16_t rollCos){
+    efisDrawHorizon(pitch, rollSin, rollCos);
+    efisDrawPlane();
+    efisDrawPitch(pitch, rollSin, rollCos);
 }
+
+
+void efisDrawPlane(){
+    glCircle(CENTER_X, CENTER_Y, PLANE_RADIUS, GL_COLOR_INVERT);
+    glVLine_(CENTER_X, CENTER_Y+PLANE_RADIUS+1, 
+             CENTER_Y+PLANE_RADIUS+1+5, GL_COLOR_INVERT);
+    glHLine_(CENTER_X-PLANE_RADIUS-1-5, CENTER_X-PLANE_RADIUS-1,
+             CENTER_Y, GL_COLOR_INVERT);
+    glHLine_(CENTER_X+PLANE_RADIUS+1, CENTER_X+PLANE_RADIUS+1+5,
+             CENTER_Y, GL_COLOR_INVERT);
+}
+
+
+void efisDrawPitch(int16_t pitch, int16_t rollSin, int16_t rollCos){
+
+    int16_t min, max;
+    int16_t x0, y0, x1, y1;
+
+    // Prepare degrees.
+    pitch = toDeg(pitch*PIX_PER_DEG);
+    max = ((pitch + 25)/10)*10;
+    min = ((pitch - 25)/10)*10;
+
+    // Loop through each pitch line.
+    while (max >= min){
+
+        // Don't plot horizon again.
+        if (max != 0){
+
+            // Figure out if tick or sub-tick.
+            if (max % 20){
+                x0 = -10;
+                x1 = +10;
+            } else {
+                x0 = -30;
+                x1 = +30;
+            }
+
+            // Set vertical location.
+            y0 = (max - pitch);
+            y1 = (max - pitch);
+
+            // Rotate pitch line to be parallel with horizon.
+            rotate16_(&x0, &y0, rollSin, rollCos);
+            rotate16_(&x1, &y1, rollSin, rollCos);
+
+            // Shift to center.
+            x0 += CENTER_X;
+            x1 += CENTER_X;
+            y0 += CENTER_Y;
+            y1 += CENTER_Y;
+
+            // Draw the pitch line.
+            glLine(x0, y0, x1, y1, GL_COLOR_INVERT);
+        }
+
+        // Decrement pitch line by 10/PIX_PER_DEG degrees.
+        max -= 10;
+    }
+}
+
+
+void efisDrawHorizon(int16_t pitch, int16_t rollSin, int16_t rollCos){
+
+    bool outside, onePoint;
+    int16_t x0, y0, x1, y1;
+    int8_t n;
+    uint8_t color;
+    uint8_t xa[4];
+    uint8_t ya[4];
+
+    // Calculate horizon line.
+    outside = efisHorizon(pitch, rollSin, rollCos, &x0, &y0, &x1, &y1);
+    onePoint = x0 == x1 && y0 == y1;
+
+    // Handle special cases of a 1 pixel horizon line and no horizon
+    // line.
+    if (outside || onePoint){
+        if (pitch >= 0){
+            glSet();
+            color = GL_COLOR_BLACK;
+        } else {
+            glClear();
+            color = GL_COLOR_WHITE;
+        }
+        if (onePoint){
+            glPoint(x0, y0, color);
+        }
+        return;
+    }
+
+    // Calculate point of drawn entities.
+    n = efisPoints(xa, ya, x0, y0, x1, y1);
+
+    // Sky is drawn entity.
+    if (n > 0){
+        glClear();
+        color = GL_COLOR_WHITE;
+
+    // Ground is drawn entity.
+    } else {
+        glSet();
+        color = GL_COLOR_BLACK;
+        n = -n;
+    }
+
+    // Handle the 3 different scenarios.
+    switch (n){
+        case 2:     // draw as a line
+            glLine(xa[0], ya[0], xa[1], ya[1], color);
+            break;
+        case 3:     // draw as a triangle
+            glTriangleFill(xa[0], ya[0], xa[1], ya[1], xa[2], ya[2], color);
+            break;
+        case 4:     // draw as a rectangle + triangle
+            efisDrawHorizonAsPolygon(xa, ya, color);
+            break;
+    }
+}
+
 
 
 // Calculate horizon line.
-bool efisHorizon(int16_t pitch, int16_t roll,
+bool efisHorizon(int16_t pitch, int16_t rollSin, int16_t rollCos,
                  int16_t *x0_ptr, int16_t *y0_ptr,
                  int16_t *x1_ptr, int16_t *y1_ptr){
-
-    int16_t s, c;
 
     // Initialize horizon line to correct pitch.
     *x0_ptr = -128;
     *x1_ptr =  128;
-    *y0_ptr = -((int32_t)pitch*360L)/16384L;
+    /* *y0_ptr = -((int32_t)pitch*360L)/16384L; */
+    *y0_ptr = -toDeg(pitch*PIX_PER_DEG);
     *y1_ptr = *y0_ptr;
 
     // Rotate horizon line by pitch angle.
-    s = sin16(roll);
-    c = cos16(roll);
-    rotate16_(x0_ptr, y0_ptr, s, c);
-    rotate16_(x1_ptr, y1_ptr, s, c);
+    rotate16_(x0_ptr, y0_ptr, rollSin, rollCos);
+    rotate16_(x1_ptr, y1_ptr, rollSin, rollCos);
 
     // Shift horizon line into center of frame buffer.
     *x0_ptr += GL_FRAME_WIDTH/2;
@@ -202,82 +351,7 @@ void efisDrawHorizonAsPolygon(uint8_t xa[4], uint8_t ya[4], uint8_t color){
 }
 
 
-void efisDrawHorizon(int16_t pitch, int16_t roll){
-
-    bool outside, onePoint;
-    int16_t s, c, x0, y0, x1, y1;
-    int8_t n;
-    uint8_t color;
-    uint8_t xa[4];
-    uint8_t ya[4];
-
-    // Calculate horizon line.
-    outside = efisHorizon(pitch, roll, &x0, &y0, &x1, &y1);
-    onePoint = x0 == x1 && y0 == y1;
-
-    // Handle special cases of a 1 pixel horizon line and no horizon
-    // line.
-    if (outside || onePoint){
-        if (pitch >= 0){
-            glSet();
-            color = GL_COLOR_BLACK;
-        } else {
-            glClear();
-            color = GL_COLOR_WHITE;
-        }
-        if (onePoint){
-            glPoint(x0, y0, color);
-        }
-        return;
-    }
-
-    // Calculate point of drawn entities.
-    n = efisPoints(xa, ya, x0, y0, x1, y1);
-
-    // Sky is drawn entity.
-    if (n > 0){
-        glClear();
-        color = GL_COLOR_WHITE;
-
-    // Ground is drawn entity.
-    } else {
-        glSet();
-        color = GL_COLOR_BLACK;
-        n = -n;
-    }
-
-    // Handle the 3 different scenarios.
-    switch (n){
-        case 2:     // draw as a line
-            glLine(xa[0], ya[0], xa[1], ya[1], color);
-            break;
-        case 3:     // draw as a triangle
-            glTriangleFill(xa[0], ya[0], xa[1], ya[1], xa[2], ya[2], color);
-            break;
-        case 4:     // draw as a rectangle + triangle
-            efisDrawHorizonAsPolygon(xa, ya, color);
-            break;
-    }
-}
-
-
-void efisPitch(float pitch, float roll){
-}
 
 
 void efisRoll(float roll){
 }
-
-
-void efisPlane(){
-}
-
-
-void efisCompass(float yaw){
-}
-
-
-
-
-
-

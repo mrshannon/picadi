@@ -24,10 +24,25 @@
 void efisDraw(int16_t yaw, int16_t pitch, int16_t roll);
 
 
-void efisAI(float pitch, float roll);
+void efisDrawCompass(int16_t yaw);
 
 
-bool efisHorizon(int16_t pitch, int16_t roll,
+void efisDrawAI(int16_t pitch, int16_t rollSin, int16_t rollCos);
+
+
+void efisDrawPlane(void);
+
+
+void efisDrawPitch(int16_t pitch, int16_t rollSin, int16_t rollCos);
+
+
+void efisDrawHorizon(int16_t pitch, int16_t rollSin, int16_t rollCos);
+
+
+void efisDrawHorizonAsPolygon(uint8_t xa[4], uint8_t ya[4], uint8_t color);
+
+
+bool efisHorizon(int16_t pitch, int16_t rollSin, int16_t rollCos,
                  int16_t *x0_ptr, int16_t *y0_ptr,
                  int16_t *x1_ptr, int16_t *y1_ptr);
 
@@ -36,22 +51,12 @@ int8_t efisPoints(uint8_t xa[], uint8_t ya[],
                   int16_t x0, int16_t y0,
                   int16_t x1, int16_t y1);
 
-void efisDrawHorizon(int16_t pitch, int16_t roll);
 
-
-void efisDrawHorizonAsPolygon(uint8_t xa[4], uint8_t ya[4], uint8_t color);
-
-
-void efisPitch(float pitch, float roll);
 
 
 void efisRoll(float roll);
 
 
-void efisPlane();
-
-
-void efisCompass(float yaw);
 
 
 #endif // EFIS_H
