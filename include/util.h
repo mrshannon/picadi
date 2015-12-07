@@ -25,6 +25,157 @@
 #define PI 3.14159265f
 
 
+union bytes1 {
+    int8_t int8;
+    uint8_t uint8;
+    struct {
+        uint8_t bit0:1;
+        uint8_t bit1:1;
+        uint8_t bit2:1;
+        uint8_t bit3:1;
+        uint8_t bit4:1;
+        uint8_t bit5:1;
+        uint8_t bit6:1;
+        uint8_t bit7:1;
+    };
+};
+
+
+union bytes2 {
+    int16_t int16;
+    uint16_t uint16;
+    struct {
+        int8_t int8A;
+        int8_t int8B;
+    };
+    struct {
+        uint8_t uint8A;
+        uint8_t uint8B;
+    };
+    struct {
+        uint8_t bit0:1;
+        uint8_t bit1:1;
+        uint8_t bit2:1;
+        uint8_t bit3:1;
+        uint8_t bit4:1;
+        uint8_t bit5:1;
+        uint8_t bit6:1;
+        uint8_t bit7:1;
+        uint8_t bit8:1;
+        uint8_t bit9:1;
+        uint8_t bit10:1;
+        uint8_t bit11:1;
+        uint8_t bit12:1;
+        uint8_t bit13:1;
+        uint8_t bit14:1;
+        uint8_t bit15:1;
+    };
+};
+
+
+union bytes3 {
+    int24_t int24;
+    uint24_t uint24;
+    struct {
+        int8_t int8A;
+        int8_t int8B;
+        int8_t int8C;
+    };
+    struct {
+        uint8_t uint8A;
+        uint8_t uint8B;
+        uint8_t uint8C;
+    };
+    struct {
+        uint8_t bit0:1;
+        uint8_t bit1:1;
+        uint8_t bit2:1;
+        uint8_t bit3:1;
+        uint8_t bit4:1;
+        uint8_t bit5:1;
+        uint8_t bit6:1;
+        uint8_t bit7:1;
+        uint8_t bit8:1;
+        uint8_t bit9:1;
+        uint8_t bit10:1;
+        uint8_t bit11:1;
+        uint8_t bit12:1;
+        uint8_t bit13:1;
+        uint8_t bit14:1;
+        uint8_t bit15:1;
+        uint8_t bit16:1;
+        uint8_t bit17:1;
+        uint8_t bit18:1;
+        uint8_t bit19:1;
+        uint8_t bit20:1;
+        uint8_t bit21:1;
+        uint8_t bit22:1;
+        uint8_t bit23:1;
+    };
+};
+
+
+union bytes4 {
+    float float32;
+    int32_t int32;
+    uint32_t uint32;
+    struct {
+        int16_t int16A;
+        int16_t int16B;
+    };
+    struct {
+        uint16_t uint16A;
+        uint16_t uint16B;
+    };
+    struct {
+        int8_t int8A;
+        int8_t int8B;
+        int8_t int8C;
+        int8_t int8D;
+    };
+    struct {
+        uint8_t uint8A;
+        uint8_t uint8B;
+        uint8_t uint8C;
+        uint8_t uint8D;
+    };
+    struct {
+        uint8_t bit0:1;
+        uint8_t bit1:1;
+        uint8_t bit2:1;
+        uint8_t bit3:1;
+        uint8_t bit4:1;
+        uint8_t bit5:1;
+        uint8_t bit6:1;
+        uint8_t bit7:1;
+        uint8_t bit8:1;
+        uint8_t bit9:1;
+        uint8_t bit10:1;
+        uint8_t bit11:1;
+        uint8_t bit12:1;
+        uint8_t bit13:1;
+        uint8_t bit14:1;
+        uint8_t bit15:1;
+        uint8_t bit16:1;
+        uint8_t bit17:1;
+        uint8_t bit18:1;
+        uint8_t bit19:1;
+        uint8_t bit20:1;
+        uint8_t bit21:1;
+        uint8_t bit22:1;
+        uint8_t bit23:1;
+        uint8_t bit24:1;
+        uint8_t bit25:1;
+        uint8_t bit26:1;
+        uint8_t bit27:1;
+        uint8_t bit28:1;
+        uint8_t bit29:1;
+        uint8_t bit30:1;
+        uint8_t bit31:1;
+    };
+};
+
+
 // Description:
 //      Busy wait for 1 millisecond.
 //
