@@ -15,6 +15,11 @@
       <itemPath>include/efis.h</itemPath>
       <itemPath>include/lcd.h</itemPath>
       <itemPath>include/stdbool.h</itemPath>
+      <itemPath>include/imu.h</itemPath>
+      <itemPath>include/pressure.h</itemPath>
+      <itemPath>include/sdcard.h</itemPath>
+      <itemPath>include/eeprom.h</itemPath>
+      <itemPath>include/dac.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -33,6 +38,7 @@
       <itemPath>src/mathlib.c</itemPath>
       <itemPath>src/efis.c</itemPath>
       <itemPath>src/lcd.c</itemPath>
+      <itemPath>src/imu.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
