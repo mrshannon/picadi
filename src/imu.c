@@ -3,7 +3,7 @@
 // Header: imu.h
 // Author: Michael R. Shannon
 // Written: Friday, December 04, 2015
-// Updated: Friday, December 04, 2015
+// Updated: Sunday, December 06, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -22,15 +22,16 @@
 #include "pressure.h"
 #include "imu.h"
 
-#include "led.h"
 
-
-union bytes2 imuAccX;
-union bytes2 imuAccY;
-union bytes2 imuAccZ;
-union bytes2 imuMagX;
-union bytes2 imuMagY;
-union bytes2 imuMagZ;
+// Inertial measurement unit buffers.
+uint8_t imuAccIdx;
+uint8_t imuMagIdx;
+union bytes2 imuAccX[IMU_BUFFER_LENGTH];
+union bytes2 imuAccY[IMU_BUFFER_LENGTH];
+union bytes2 imuAccZ[IMU_BUFFER_LENGTH];
+union bytes2 imuMagX[IMU_BUFFER_LENGTH];
+union bytes2 imuMagY[IMU_BUFFER_LENGTH];
+union bytes2 imuMagZ[IMU_BUFFER_LENGTH];
 
 
 // Interrupt macros and defines.
@@ -296,6 +297,10 @@ union bytes2 imuMagZ;
 
 void imuInit(void){
 
+    // Initialize buffer indices.
+    imuAccIdx = 0;
+    imuMagIdx = 0;
+
     // Set all chip select pins to outputs.
     IMU_SELECT_PIN_OUTPUT();
     PRS_SELECT_PIN_OUTPUT();
@@ -309,14 +314,6 @@ void imuInit(void){
     SDC_DESELECT();
     DAC_DESELECT();
     EPM_DESELECT();
-
-    // Initialize accelerometer and magnetometer globals to 0.
-    imuAccX.uint16 = 0;
-    imuAccY.uint16 = 0;
-    imuAccZ.uint16 = 0;
-    imuMagX.uint16 = 0;
-    imuMagY.uint16 = 0;
-    imuMagZ.uint16 = 0;
 
     // Setup SPI module 1 to talk to the IMU.
     spi1Init(
@@ -333,7 +330,7 @@ void imuInit(void){
     );
 
     // Enable accelerometer at 50 Hz and block updates until reads.
-    IMU_WRITE(CTRL1, spi1ExchangeByte(AODR_3 | BDU | AZEN | AYEN | AXEN););
+    IMU_WRITE(CTRL1, spi1ExchangeByte(AODR_50 | BDU | AZEN | AYEN | AXEN););
 
     // Set accelerometer scale to +-2g.
     IMU_WRITE(CTRL2, spi1ExchangeByte(AFS_2););
@@ -342,7 +339,7 @@ void imuInit(void){
     IMU_WRITE(CTRL4, spi1ExchangeByte(INT2_DRDY_A | INT2_DRDY_M););
 
     // Set magnetometer to low resolution and data rate to 50 Hz.
-    IMU_WRITE(CTRL5, spi1ExchangeByte(M_RES_LOW | M_ODR_3););
+    IMU_WRITE(CTRL5, spi1ExchangeByte(M_RES_LOW | M_ODR_50););
 
     // Set magnetometer to +-2 gauss.
     IMU_WRITE(CTRL6, spi1ExchangeByte(MFS_2););
@@ -359,6 +356,18 @@ void imuInit(void){
 }
 
 
+void imuSpinup(void){
+
+    // One manual call is needed because the PIC triggers it's interrupt
+    // on a rising edge.  If the IMU interrupt pin is tripped before
+    // interrupts are enabled it will be stuck.
+    imuISR();
+
+    // Wait for 1 second while the buffers fill up.
+    delayxs(1);
+}
+
+
 // Change temporary data section for library interrupts.
 #pragma tmpdata imu_tmpdata
 void imuISR(void){
@@ -368,28 +377,36 @@ void imuISR(void){
     // Check for new magnetometer data.
     IMU_READ(STATUS_M, byte = spi1ExchangeByte_ISRL(0););
     if (byte & ZYXMDA){
+        // Update index.
+        if (imuMagIdx == IMU_BUFFER_LENGTH){
+            imuMagIdx = 0;
+        }
         // Read magnetometer data into globals.
         IMU_READ(OUT_X_L_M, 
-            imuMagX.uint8A = spi1ExchangeByte_ISRL(0);
-            imuMagX.uint8B = spi1ExchangeByte_ISRL(0);
-            imuMagY.uint8A = spi1ExchangeByte_ISRL(0);
-            imuMagY.uint8B = spi1ExchangeByte_ISRL(0);
-            imuMagZ.uint8A = spi1ExchangeByte_ISRL(0);
-            imuMagZ.uint8B = spi1ExchangeByte_ISRL(0);
+            imuMagX[imuMagIdx].uint8A = spi1ExchangeByte_ISRL(0);
+            imuMagX[imuMagIdx].uint8B = spi1ExchangeByte_ISRL(0);
+            imuMagY[imuMagIdx].uint8A = spi1ExchangeByte_ISRL(0);
+            imuMagY[imuMagIdx].uint8B = spi1ExchangeByte_ISRL(0);
+            imuMagZ[imuMagIdx].uint8A = spi1ExchangeByte_ISRL(0);
+            imuMagZ[imuMagIdx].uint8B = spi1ExchangeByte_ISRL(0);
         );
     }
 
     // Check for new accelerometer data.
     IMU_READ(STATUS_A, byte = spi1ExchangeByte_ISRL(0););
     if (byte & ZYXADA){
+        // Update index.
+        if (imuAccIdx == IMU_BUFFER_LENGTH){
+            imuAccIdx = 0;
+        }
         // Read accelerometer data.
         IMU_READ(OUT_X_L_A, 
-            imuAccX.uint8A = spi1ExchangeByte_ISRL(0);
-            imuAccX.uint8B = spi1ExchangeByte_ISRL(0);
-            imuAccY.uint8A = spi1ExchangeByte_ISRL(0);
-            imuAccY.uint8B = spi1ExchangeByte_ISRL(0);
-            imuAccZ.uint8A = spi1ExchangeByte_ISRL(0);
-            imuAccZ.uint8B = spi1ExchangeByte_ISRL(0);
+            imuAccX[imuAccIdx].uint8A = spi1ExchangeByte_ISRL(0);
+            imuAccX[imuAccIdx].uint8B = spi1ExchangeByte_ISRL(0);
+            imuAccY[imuAccIdx].uint8A = spi1ExchangeByte_ISRL(0);
+            imuAccY[imuAccIdx].uint8B = spi1ExchangeByte_ISRL(0);
+            imuAccZ[imuAccIdx].uint8A = spi1ExchangeByte_ISRL(0);
+            imuAccZ[imuAccIdx].uint8B = spi1ExchangeByte_ISRL(0);
         );
     }
 
