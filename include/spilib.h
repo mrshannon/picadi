@@ -2,7 +2,7 @@
 // File: spilib.h
 // Author: Michael R. Shannon
 // Written: Friday, November 13, 2015
-// Updated: Friday, November 13, 2015
+// Updated: Sunday, December 06, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Description:
@@ -98,7 +98,7 @@ void spi2Init(uint8_t config, uint8_t interupt);
 //      Turn off the SPI module.
 //
 #define spi1Close() SPI1_ENABLE = 0
-#define spi2Close() SPI1_ENABLE = 0
+#define spi2Close() SPI2_ENABLE = 0
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -125,6 +125,10 @@ void spi2Init(uint8_t config, uint8_t interupt);
 //
 uint8_t spi1ExchangeByte(uint8_t out);
 uint8_t spi2ExchangeByte(uint8_t out);
+// same as above but use seperate tmpdata sections so they are safe to
+// use inside of interupts.
+uint8_t spi1ExchangeByte_ISRH(uint8_t out);
+uint8_t spi1ExchangeByte_ISRL(uint8_t out);
 
 
 // Description:

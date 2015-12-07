@@ -3,7 +3,7 @@
 // Header: spi.h
 // Author: Michael R. Shannon
 // Written: Friday, November 13, 2015
-// Updated: Friday, November 13, 2015
+// Updated: Sunday, December 06, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -63,29 +63,24 @@ void spi2Init(uint8_t config, uint8_t interupt){
 }
 
 
+// Macro to expand to inner portion of spi1ExchangeByte* (not _).
+// NOTE: Due o how macros work it cannot be commented.
+#define SPI1_EXCHANGE_BYTE do { \
+        uint8_t tmp; \
+        SPI1_BUFFER = out; \
+        if (SPI1_WRITE_COLLISION){ \
+            while (SPI1_RECEIVE_DONE == 0); \
+            SPI1_WRITE_COLLISION = 0; \
+            tmp = SPI1_BUFFER; \
+            SPI1_BUFFER = out; \
+        } \
+        while (SPI1_RECEIVE_DONE == 0); \
+        return SPI1_BUFFER; \
+    } while (0)
+
+
 uint8_t spi1ExchangeByte(uint8_t out){
-
-    uint8_t tmp;
-
-    // Transmit byte over SPI.
-    SPI1_BUFFER = out;
-
-    // If this cause a write collision wait for previous exchange to
-    // finish and throw away the received byte.
-    if (SPI1_WRITE_COLLISION){
-        while (SPI1_RECEIVE_DONE == 0); // wait for receive to finish
-        SPI1_WRITE_COLLISION = 0;       // clear write collision bit
-        tmp = SPI1_BUFFER;              // empty buffer
-        SPI1_BUFFER = out;             // write byte to SPI
-    }
-
-    // Wait for transmit/receive operation to complete.
-    while (SPI1_RECEIVE_DONE == 0);
-
-    // Return received byte.  It is done this way in an attempt to keep
-    // the compiler from optimizing out the read.
-    tmp = SPI1_BUFFER;
-    return tmp;
+    SPI1_EXCHANGE_BYTE;
 }
 
 
@@ -113,6 +108,20 @@ uint8_t spi2ExchangeByte(uint8_t out){
     tmp = SPI2_BUFFER;
     return SPI2_BUFFER;
 }
+
+
+#pragma tmpdata spi_high_tmpdata
+uint8_t spi1ExchangeByte_ISRH(uint8_t out){
+    SPI1_EXCHANGE_BYTE;
+}
+#pragma tmpdata
+
+
+#pragma tmpdata spi_low_tmpdata
+uint8_t spi1ExchangeByte_ISRL(uint8_t out){
+    SPI1_EXCHANGE_BYTE;
+}
+#pragma tmpdata
 
 
 uint8_t spi1ExchangeByte_(uint8_t out){
