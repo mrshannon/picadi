@@ -3,7 +3,7 @@
 // Header: ahrs.h
 // Author: Michael R. Shannon
 // Written: Sunday, December 06, 2015
-// Updated: Sunday, December 06, 2015
+// Updated: Tuesday, December 08, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -14,9 +14,9 @@
 
 #include <p18cxxx.h>
 #include "stdint.h"
+#include "mathlib.h"
 #include "imu.h"
 #include "ahrs.h"
-#include "mathlib.h"
 
 
 bool ahrsUpdate(int16_t *yaw, int16_t *pitch, int16_t *roll){
@@ -80,10 +80,10 @@ bool ahrsUpdate(int16_t *yaw, int16_t *pitch, int16_t *roll){
     // Check for validity of solution.
     tmpA = (ax*ax)/IMU_ONE + (ay*ay)/IMU_ONE + (az*az)/IMU_ONE;
     if (tmpA < IMU_ACC_MAG_MIN || IMU_ACC_MAG_MAX < tmpA){
-        return true; // possible errors
+        return false; // possible errors
     }
 
-    return false;
+    return true;
 }
 
 
