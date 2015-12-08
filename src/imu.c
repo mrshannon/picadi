@@ -3,7 +3,7 @@
 // Header: imu.h
 // Author: Michael R. Shannon
 // Written: Friday, December 04, 2015
-// Updated: Sunday, December 06, 2015
+// Updated: Tuesday, December 08, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -329,8 +329,8 @@ void imuInit(void){
         spi1ExchangeByte(XMIEN | YMIEN | ZMIEN | PP | IEA_HIGH);
     );
 
-    // Enable accelerometer at 50 Hz and block updates until reads.
-    IMU_WRITE(CTRL1, spi1ExchangeByte(AODR_50 | BDU | AZEN | AYEN | AXEN););
+    // Enable accelerometer at 100 Hz and block updates until reads.
+    IMU_WRITE(CTRL1, spi1ExchangeByte(AODR_100 | BDU | AZEN | AYEN | AXEN););
 
     // Set accelerometer scale to +-2g.
     IMU_WRITE(CTRL2, spi1ExchangeByte(AFS_2););
@@ -338,8 +338,8 @@ void imuInit(void){
     // Use INT2 pin as the data ready interrupt pin.
     IMU_WRITE(CTRL4, spi1ExchangeByte(INT2_DRDY_A | INT2_DRDY_M););
 
-    // Set magnetometer to low resolution and data rate to 50 Hz.
-    IMU_WRITE(CTRL5, spi1ExchangeByte(M_RES_LOW | M_ODR_50););
+    // Set magnetometer to low resolution and data rate to 100 Hz.
+    IMU_WRITE(CTRL5, spi1ExchangeByte(M_RES_LOW | M_ODR_100););
 
     // Set magnetometer to +-2 gauss.
     IMU_WRITE(CTRL6, spi1ExchangeByte(MFS_2););

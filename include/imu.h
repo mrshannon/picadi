@@ -2,14 +2,14 @@
 // File: imu.h
 // Author: Michael R. Shannon
 // Written: Friday, December 04, 2015
-// Updated: Sunday, December 06, 2015
+// Updated: Tuesday, December 08, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Description:
 //      This library is used to talk to the LSM303D accelerometer and
-//      compass sensor.  It uses low priority interrupts to keep a half
+//      compass sensor.  It uses low priority interrupts to keep a 0.1
 //      second buffer of accelerometer and magnetometer values full of
-//      the most recent data.  The frequency of this data is 50 Hz.
+//      the most recent data.  The frequency of this data is 100 Hz.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -23,9 +23,9 @@
 #define IMU_H
 
 
-#define IMU_ONE 32767L
-#define IMU_ACC_MAG_MIN 14746L
-#define IMU_ACC_MAG_MAX 18022L
+#define IMU_ONE 16383L
+#define IMU_ACC_MAG_MIN 15563L // IMU_ONE*0.95
+#define IMU_ACC_MAG_MAX 17202L // IMU_ONE*1.05
 
 
 // Hard iron correction vector.
