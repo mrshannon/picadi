@@ -20,6 +20,7 @@
       <itemPath>include/sdcard.h</itemPath>
       <itemPath>include/eeprom.h</itemPath>
       <itemPath>include/dac.h</itemPath>
+      <itemPath>include/ahrs.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -39,6 +40,7 @@
       <itemPath>src/efis.c</itemPath>
       <itemPath>src/lcd.c</itemPath>
       <itemPath>src/imu.c</itemPath>
+      <itemPath>src/ahrs.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
