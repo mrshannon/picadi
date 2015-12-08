@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 
+#include <p18cxxx.h>
 #include <delays.h>
 #include "config.h"
 #include "stdint.h"
@@ -226,6 +227,30 @@ void delayxs(uint8_t s);
 //
 #define STR_MAX_LENGTH 256
 char *str(const rom char *src);
+
+
+// Description:
+//      This macro takes a block of code and runs it atomically, that is
+//      with all interrupts off.  Therefore, make sure to only put small
+//      sections of code within this macro.
+//
+#define ATOMIC(code) do { \
+        INTCONbits.GIE = 0; \
+        code \
+        INTCONbits.GIE = 1; \
+    } while(0)
+
+
+// Description:
+//      Enable interrupts.
+//
+#define INT_ON() RCONbits.IPEN = 1; INTCONbits.GIEH = 1; INTCONbits.GIEL = 1
+
+
+// Description:
+//      Disable interrupts.
+//
+#define INT_OFF() RCONbits.IPEN = 0; INTCONbits.GIEH = 0; INTCONbits.GIEL = 0
 
 
 #endif // UTIL_H
