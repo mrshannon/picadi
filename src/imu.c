@@ -378,7 +378,7 @@ void imuISR(void){
     IMU_READ(STATUS_M, byte = spi1ExchangeByte_ISRL(0););
     if (byte & ZYXMDA){
         // Update index.
-        if (imuMagIdx == IMU_BUFFER_LENGTH){
+        if (++imuMagIdx == IMU_BUFFER_LENGTH){
             imuMagIdx = 0;
         }
         // Read magnetometer data into globals.
@@ -396,7 +396,7 @@ void imuISR(void){
     IMU_READ(STATUS_A, byte = spi1ExchangeByte_ISRL(0););
     if (byte & ZYXADA){
         // Update index.
-        if (imuAccIdx == IMU_BUFFER_LENGTH){
+        if (++imuAccIdx == IMU_BUFFER_LENGTH){
             imuAccIdx = 0;
         }
         // Read accelerometer data.
