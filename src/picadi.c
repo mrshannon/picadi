@@ -4,21 +4,28 @@
 // File: pacadi.c
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Thursday, November 12, 2015
+// Updated: Tuesday, December 08, 2015
 // Device: PIC18F87K22
 // Compiler: C18
-// Fosc: 10 MHz
-// Instruction Clock: Fosc/4
+//
+// NOTE: The LED and LCD libraries are not actually used.  There where
+// included in this project to aid with debugging.
 //
 ////////////////////////////////////////////////////////////////////////
 
 
 #include <p18cxxx.h>
 #include "config.h"
-#include "led.h"
-#include "oled.h"
 #include "util.h"
-#include "graphics.h"
+#include "stdint.h"
+#include "stdbool.h"
+#include "mathlib.h"
+#include "oled.h"
+#include "efis.h"
+#include "imu.h"
+#include "ahrs.h"
+
+
 #pragma config FOSC=HS1, PWRTEN=ON, BOREN=ON, BORV=2, PLLCFG=ON
 #pragma config WDTEN=OFF, CCP2MX=PORTC, XINST=OFF
 
@@ -26,7 +33,6 @@
 // Declaration of ISRs.
 void isrh(void);
 void isrl(void);
-
 
 
 // High priority interrupt redirect.
@@ -45,71 +51,46 @@ void lowVector(void){
 #pragma code
 
 
+uint16_t tcounter = 0;
+
+
 void main(){
 
-    uint8_t i;
-    int16_t x, y;
+    int16_t yaw, pitch, roll;
+    bool valid;
 
-    ////////////////////////////////////////////////////////////////////
-    //// INITIALIZATION
-    ////////////////////////////////////////////////////////////////////
-    ledInit();
-    LED_D2_ON();
+    uint8_t invalidCooldown = 0;
+
+    // Initialize all subsystems.
     oledInit();
-    LED_D3_ON();
     oledWriteBuffer();
-    LED_D4_ON();
+    imuInit();
 
+    // Enable interrupts.
+    RCONbits.IPEN = 1;      // Enable priority levels
+    INTCONbits.GIEL = 1;    // Enable low-priority interrupts to CPU.
+    INTCONbits.GIEH = 1;    // Enable all interrupts.
+
+    // Spin-up IMU and delay on splash screen.
+    imuSpinup();
     delayxs(2);
-    LED_D4_OFF();
 
-    /* for (i = 0; i < 100; ++i){ */
-    /*     glPoint(i, 48, GL_COLOR_INVERT); */
-    /* } */
-    /* for (i = 0; i < 100; ++i){ */
-    /*     glPoint(i, 24, GL_COLOR_WHITE); */
-    /* } */
-    /* for (i = 0; i < 100; ++i){ */
-    /*     glPoint(i, 56, GL_COLOR_BLACK); */
-    /* } */
+    // Main loop.
+    while (true){
 
-    /* glClear(); */
-    /* oledWriteBuffer(); */
-    for (i = 0; i < 64; ++i){
-        glVLine(i+25, 63, i, GL_COLOR_INVERT);
-    }
-    oledWriteBuffer();
-    /* glHLine(0, 127, 63, GL_COLOR_WHITE); */
-    /* glHLine(127, 0, 25, GL_COLOR_BLACK); */
-    /* glHLine(0, 127, 24, GL_COLOR_INVERT); */
-    glClear();
-    /* glHLine(0, 64, 0, GL_COLOR_WHITE); */
-    /* glPoint(0, 0, GL_COLOR_BLACK); */
-    /* glPoint(1, 0, GL_COLOR_WHITE); */
-    /* glPoint(2, 0, GL_COLOR_WHITE); */
-    /* glPoint(3, 0, GL_COLOR_WHITE); */
-    /* glPoint(4, 0, GL_COLOR_WHITE); */
-    /* glPoint(0, 1, GL_COLOR_WHITE); */
-    /* glPoint(0, 2, GL_COLOR_WHITE); */
-    /* glPoint(0, 3, GL_COLOR_WHITE); */
-    /* glPoint(0, 4, GL_COLOR_WHITE); */
-    /* glLine(0, 0, 127, 200, GL_COLOR_WHITE); */
-    /* glPoint(127, 20, GL_COLOR_WHITE); */
-    for (x = -10; x < GL_FRAME_WIDTH + 10; ++x){
+        // Update AHRS solution.
+        valid = ahrsUpdate(&yaw, &pitch, &roll);
+
+        // Clear the frame buffer.
         glClear();
-        glHLine(x-3, x+3, x/3, GL_COLOR_WHITE);
-        glVLine(x, x/4-3, x/4+3, GL_COLOR_WHITE);
+
+        // Write the EFIS to the frame buffer.
+        efisDraw(yaw, pitch, roll, valid);
+
+        // Write the frame buffer.
         oledWriteBuffer();
-        /* delayxms(10); */
-    }
 
-
-
-    ////////////////////////////////////////////////////////////////////
-    //// MAIN LOOP
-    ////////////////////////////////////////////////////////////////////
-    while (1){
-
+        /* delayxs(1); */
     }
 }
 
@@ -117,8 +98,7 @@ void main(){
 // Description
 //      The high priority interrupt handler.
 //
-#pragma interrupt isrh nosave=TBLPTR,TABLAT,PCLATH,PCLATU,\
-                              section(".tmpdata"),section("MATH_DATA")
+#pragma interrupt isrh
 void isrh(void){
     // high priority interrupt code
 }
@@ -128,7 +108,9 @@ void isrh(void){
 //      The low priority interrupt handler.
 //
 #pragma interruptlow isrl nosave=TBLPTR,TABLAT,PCLATH,PCLATU,\
-                                 section(".tmpdata"),section("MATH_DATA")
+                          section(".tmpdata"),section("MATH_DATA")
 void isrl(void){
-    // low priority interrupt code
+    while(IMU_INT_FLAG) {
+        imuISR();
+    }
 }
