@@ -3,7 +3,7 @@
 // Header: efis.h
 // Author: Michael R. Shannon
 // Written: Monday, November 30, 2015
-// Updated: Thursday, December 03, 2015
+// Updated: Tuesday, December 08, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -27,10 +27,36 @@
 #define PIX_PER_DEG 2   // pixels per degree of pitch
 
 
-void efisDraw(int16_t yaw, int16_t pitch, int16_t roll){
-
-    efisDrawAI(pitch, roll);
+void efisDraw(int16_t yaw, int16_t pitch, int16_t roll, bool valid){
+    efisDrawAI(pitch, -roll);
     efisDrawCompass(yaw);
+    efisDrawInvalid(valid);
+}
+
+
+void efisDrawInvalid(bool valid){
+
+    static uint8_t invalidCounter = 0;
+
+    // If data not valid start invalid counter (15 frames).
+    if (!valid){
+        invalidCounter = 15;
+    }
+
+    if (invalidCounter > 0){
+
+        // Left side warning block.
+        glRectFill(5, 5, 25, GL_MAX_Y-5, GL_COLOR_INVERT);
+        glLine(5, 5, 25, GL_MAX_Y-5, GL_COLOR_INVERT);
+        glLine(25, 5, 5, GL_MAX_Y-5, GL_COLOR_INVERT);
+
+        // Right side warning block.
+        glRectFill(GL_MAX_X-25, 5, GL_MAX_X-5, GL_MAX_Y-5, GL_COLOR_INVERT);
+        glLine(GL_MAX_X-25, 5, GL_MAX_X-5, GL_MAX_Y-5, GL_COLOR_INVERT);
+        glLine(GL_MAX_X-5, 5, GL_MAX_X-25, GL_MAX_Y-5, GL_COLOR_INVERT);
+
+        --invalidCounter;
+    }
 }
 
 

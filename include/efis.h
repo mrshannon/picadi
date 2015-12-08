@@ -2,7 +2,7 @@
 // File: efis.h
 // Author: Michael R. Shannon
 // Written: Monday, November 30, 2015
-// Updated: Thursday, December 03, 2015
+// Updated: Tuesday, December 08, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Description:
@@ -15,13 +15,17 @@
 
 #include "graphics.h"
 #include "stdint.h"
+#include "stdbool.h"
 
 
 #ifndef EFIS_H
 #define EFIS_H
 
 
-void efisDraw(int16_t yaw, int16_t pitch, int16_t roll);
+void efisDraw(int16_t yaw, int16_t pitch, int16_t roll, bool valid);
+
+
+void efisDrawInvalid(bool valid);
 
 
 void efisDrawCompass(int16_t yaw);
