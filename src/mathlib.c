@@ -27,6 +27,16 @@ static const int16_t sin16_table[TRIG16_TABLE_SIZE+1] = {
 };
 
 
+// 16384 equals 45 degrees, divide by 8 to get actual angle
+static const int16_t atan16_table[TRIG16_TABLE_SIZE+1] = {
+        0,   652,  1302,  1950,  2594,  3233,  3866,  4493,
+     5110,  5719,  6318,  6907,  7484,  8050,  8603,  9144,
+     9672, 10187, 10689, 11177, 11653, 12115, 12564, 13000,
+    13424, 13835, 14234, 14620, 14995, 15359, 15711, 16053,
+    16384
+};
+
+
 int8_t abs8(int8_t n){
     if (n < 0){
         return -n;
@@ -104,6 +114,73 @@ int16_t cos16(int16_t theta){
 
 int32_t tan16(int16_t theta){
     return (int32_t)(sin16(theta) * 32768) / (int32_t)(cos16(theta));
+}
+
+
+// Description:
+//      Internal only version of arctangent.
+//
+// Input:
+//      int16_t xy:
+//          y/x scaled from 0 to 1 to 0 to 32767.  All inputs are
+//          in first octant.
+//
+// Output (int16_t):
+//      TRIG16 scaled angle in the 1st octant corresponding to yx. 
+//
+int16_t _atan16(int16_t yx){
+
+    uint8_t idx;
+    int16_t result;
+
+    // Get indices into the lookup table.
+    idx = yx/1024;
+
+    // Linearly interpolate table.
+    result = yIntercept(idx*1024, atan16_table[idx],
+                        (idx+1)*1024, atan16_table[idx+1], yx);
+
+    return result/8;
+}
+
+
+// Algorithm from: http://www.coranac.com/documents/arctangent/
+int16_t atan216(int16_t y, int16_t x){
+
+    int16_t offset = 0;
+    int32_t _x, _y, t;
+
+    // Shortcut for 0 or 180 degrees.
+    if (y == 0){
+        return x >= 0 ? 0 : TRIG16_CYCLE/2;
+    }
+
+    _x = x;
+    _y = y;
+
+    // Shift angle into first octant.
+    // rotate by -180 degrees
+    if (_y < 0){
+        _x = -_x;
+        _y = -_y;
+        offset += TRIG16_CYCLE/2;
+    }
+    // rotate by -90 degrees
+    if (_x <= 0){
+        t = _x;
+        _x = _y;
+        _y = -t;
+        offset += TRIG16_CYCLE/4;
+    }
+    // rotate by -45 degrees
+    if (_x <= _y){
+        t = _y - _x;
+        _x = _x + _y;
+        _y = t;
+        offset += TRIG16_CYCLE/8;
+    }
+
+    return _atan16((_y*TRIG16_ONE)/_x) + offset;
 }
 
 

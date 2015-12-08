@@ -28,6 +28,7 @@
 #define TRIG16_CYCLE 0x4000 // 16384
 #define TRIG16_MAX_ANGLE 0x3FFF // 16383
 #define TRIG16_MIN_ANGLE 0
+#define TRIG16_ONE 32767L
 
 
 // Description:
@@ -87,6 +88,22 @@ int16_t cos16(int16_t theta);
 //      Tangent of theta where -1 to +1 is scaled from -32767 to +32767.
 //
 int32_t tan16(int16_t theta);
+
+
+// Description:
+//      Integer based atan2 function.  There are 16384 units per
+//      revolution.
+//
+//      Algorithm from: http://www.coranac.com/documents/arctangent/
+//
+// Input:
+//      int16_t y:
+//          y (vertical) value
+//      int16_t x:
+//          x (horizontal) value
+//
+int16_t atan216(int16_t y, int16_t x);
+
 
 #define fromDeg(theta) \
     ((int16_t)(((int32_t)TRIG16_CYCLE)*((int32_t)theta)/360L))
