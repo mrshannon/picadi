@@ -24,8 +24,8 @@
 
 
 #define IMU_ONE 16383L
-#define IMU_ACC_MAG_MIN 15563L // IMU_ONE*0.95
-#define IMU_ACC_MAG_MAX 17202L // IMU_ONE*1.05
+#define IMU_ACC_MAG_MIN 14745L // IMU_ONE*0.90
+#define IMU_ACC_MAG_MAX 18021L // IMU_ONE*1.10
 
 
 // IMU pin select/unselect macros.
