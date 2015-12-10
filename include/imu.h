@@ -28,12 +28,6 @@
 #define IMU_ACC_MAG_MAX 17202L // IMU_ONE*1.05
 
 
-// Hard iron correction vector.
-#define IMU_HIX 0
-#define IMU_HIY 0
-#define IMU_HIZ 0
-
-
 // IMU pin select/unselect macros.
 #define IMU_SELECT_PIN_OUTPUT() (TRISHbits.TRISH5 = 0)
 #define IMU_SELECT() (LATHbits.LATH5 = 0)

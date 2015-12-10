@@ -28,7 +28,7 @@
 
 
 void efisDraw(int16_t yaw, int16_t pitch, int16_t roll, bool valid){
-    efisDrawAI(pitch, -roll);
+    efisDrawAI(pitch, roll);
     efisDrawCompass(yaw);
     efisDrawInvalid(valid);
 }

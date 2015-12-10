@@ -51,15 +51,10 @@ void lowVector(void){
 #pragma code
 
 
-uint16_t tcounter = 0;
-
-
 void main(){
 
     int16_t yaw, pitch, roll;
     bool valid;
-
-    uint8_t invalidCooldown = 0;
 
     // Initialize all subsystems.
     oledInit();
@@ -78,7 +73,7 @@ void main(){
     // Main loop.
     while (true){
 
-        // Update AHRS solution.
+        /* // Update AHRS solution. */
         valid = ahrsUpdate(&yaw, &pitch, &roll);
 
         // Clear the frame buffer.
@@ -89,8 +84,6 @@ void main(){
 
         // Write the frame buffer.
         oledWriteBuffer();
-
-        /* delayxs(1); */
     }
 }
 

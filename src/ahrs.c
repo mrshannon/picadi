@@ -26,11 +26,13 @@ bool ahrsUpdate(int16_t *yaw, int16_t *pitch, int16_t *roll){
     int32_t rollSin, rollCos, pitchSin, pitchCos;
     int32_t tmpA, tmpB, tmpC, tmpD, tmpE;
 
-    // Read data from IMU.
+    // Read data from IMU and convert to plane based coordinate system.
+    // X forward, Y starbord, and Z down, but invert gravity vector as
+    // well so gravity is positive.
     ahrsReadAcc(&axt, &ayt, &azt);
     ahrsReadMag(&mxt, &myt, &mzt);
-    ax = axt; ay = ayt; az = azt;
-    mx = mxt; my = myt; mz = mzt;
+    ax = -axt; ay = ayt; az = azt;
+    mx = mxt; my = -myt; mz = -mzt;
 
     // Calculate the roll angle.
     *roll = atan216(ay, az);
@@ -62,20 +64,12 @@ bool ahrsUpdate(int16_t *yaw, int16_t *pitch, int16_t *roll){
     pitchCos = cos16(*pitch);
 
     // Calculate the yaw angle.
-    tmpA = ((mz - IMU_HIZ)*rollSin)/TRIG16_ONE;
-    tmpB = ((my - IMU_HIY)*rollCos)/TRIG16_ONE;
-    tmpC = ((mx - IMU_HIX)*pitchCos)/TRIG16_ONE;
-    tmpD = ((((my - IMU_HIY)*pitchSin)/TRIG16_ONE)*rollSin)/TRIG16_ONE;
-    tmpE = ((((mz - IMU_HIZ)*pitchSin)/TRIG16_ONE)*rollCos)/TRIG16_ONE;
-    *yaw = atan216(tmpA - tmpB, tmpC + tmpD + tmpE);
-
-    // Limit yaw to 0 to 360 degrees, shift S to N and flip so it has
-    // the layout of a compass.  The reason the south and north poles
-    // need to flipped is unknown to the author.
-    *yaw = -(*yaw - TRIG16_CYCLE/2);
-    if (*yaw < 0){
-        *yaw += TRIG16_CYCLE;
-    }
+    tmpA = (mx*pitchCos)/TRIG16_ONE;
+    tmpB = (mz*pitchSin)/TRIG16_ONE;
+    tmpC = (((mz*rollSin)/TRIG16_ONE)*pitchCos)/TRIG16_ONE;
+    tmpD = (((mx*rollSin)/TRIG16_ONE)*pitchSin)/TRIG16_ONE;
+    tmpE = (my*rollCos)/TRIG16_ONE;
+    *yaw = atan216(tmpC - tmpD - tmpE, tmpA + tmpB);
 
     // Check for validity of solution.
     tmpA = (ax*ax)/IMU_ONE + (ay*ay)/IMU_ONE + (az*az)/IMU_ONE;
