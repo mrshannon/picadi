@@ -2,7 +2,7 @@
 // File: spilib.h
 // Author: Michael R. Shannon
 // Written: Friday, November 13, 2015
-// Updated: Sunday, December 06, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Description:
@@ -10,6 +10,7 @@
 //      mode.
 //
 ////////////////////////////////////////////////////////////////////////
+
 
 #ifndef SPILIB_H
 #define SPILIB_H
@@ -90,6 +91,7 @@
 //
 //      uint8_t interrupt:
 //          Bitmask documented above.
+//
 void spi1Init(uint8_t config, uint8_t interupt);
 void spi2Init(uint8_t config, uint8_t interupt);
 
@@ -101,20 +103,9 @@ void spi2Init(uint8_t config, uint8_t interupt);
 #define spi2Close() SPI2_ENABLE = 0
 
 
-////////////////////////////////////////////////////////////////////////
-// NOTE: Some of the functions below come it two flavors.  Blocking
-// versions and non-blocking versions.  The latter end in an underscore.
-// It is recommended to use the non-blocking versions if using
-// interrupts because the only blocking from the non-blocking versions
-// will fall through if the interrupt has been triggered.
-////////////////////////////////////////////////////////////////////////
-
-
 // Description:
 //      Perform SPI byte exchange.  Transmits the given byte and returns
-//      the byte it receives at the same time.  This is the blocking
-//      version, thus it assumes SPIX_RECEIVE_DONE is cleared upon entry
-//      and it will busy wait until the transmission is complete.
+//      the byte it receives at the same time.
 //
 // Input:
 //      uint8_t out:
@@ -132,85 +123,8 @@ uint8_t spi1ExchangeByte_ISRL(uint8_t out);
 
 
 // Description:
-//      Perform SPI byte exchange.  Transmits the given byte and returns
-//      the last byte received.  This is non blocking and makes no
-//      assumption about the state of SPIX_RECEIVE_DONE.
-//
-//      It will busy wait until SPIX_RECEIVE_DONE is set, start the
-//      transmission of the given byte and immediately return with the
-//      previously received byte.
-//
-// Input:
-//      uint8_t out:
-//          Byte to send out.
-//
-// Output (uint8_t):
-//      Byte received during last exchange.
-//
-uint8_t spi1ExchangeByte_(uint8_t out);
-uint8_t spi2ExchangeByte_(uint8_t out);
-
-
-// Description:
-//      Read byte from SPI while sending null (blocking version).
-//      SPIX_RECIEVE_DONE should be cleared upon entry.  This is the same
-//      as:
-//      
-//          result = spixExchangeByte(0);
-//
-// Output:
-//      Byte received during exchange.
-//
-uint8_t spi1ReadByte();
-uint8_t spi2ReadByte();
-
-
-// Description:
-//      Read byte from SPI, while sending null (non blocking version).
-//      Busy wait for SPIX_RECIEVE_DONE to be set.  This is the same
-//      as:
-//
-//          result = spixExchangeByte_(0);
-//
-// Output:
-//      Byte received during exchange.
-//
-uint8_t spi1ReadByte_();
-uint8_t spi2ReadByte_();
-
-
-// Description:
-//      Send byte through SPI while throwing away the result (blocking
-//      version).  This is the same as:
-//
-//          spixEchangeByte(out)
-//
-// Input:
-//      uint8_t out:
-//          Byte to send out.
-// 
-void spi1WriteByte(uint8_t out);
-void spi2WriteByte(uint8_t out);
-
-
-// Description:
-//      Send byte through SPI while throwing away the result
-//      (non-blocking version).  This is the same as:
-//
-//          spixEchangeByte_(out)
-//
-// Input:
-//      uint8_t out:
-//          Byte to send out.
-// 
-void spi1WriteByte_(uint8_t out);
-void spi2WriteByte_(uint8_t out);
-
-
-// Description:
-//      Write a byte string to the SPI module and store the received bytes.
-//
-//      NOTE: This has does not have a non-blocking version.
+//      Write a byte string to the SPI module and store the received
+//      bytes.
 //
 // Input:
 //      uint8_t len:
@@ -225,7 +139,7 @@ void spi2WriteByte_(uint8_t out);
 //          throw away received bytes.
 //
 //          NOTE: It is safe for this to point to the same location as
-//                outPtr.  This effectively swaps the byte to transmit
+//                <outPtr>.  This effectively swaps the byte to transmit
 //                with the received byte.
 //
 void spi1Exchange(uint8_t len, uint8_t *outPtr, uint8_t *inPtr);

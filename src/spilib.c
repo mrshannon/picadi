@@ -1,9 +1,9 @@
 ////////////////////////////////////////////////////////////////////////
-// File: spi.c
-// Header: spi.h
+// File: spilib.c
+// Header: spilib.h
 // Author: Michael R. Shannon
 // Written: Friday, November 13, 2015
-// Updated: Sunday, December 06, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -124,90 +124,6 @@ uint8_t spi1ExchangeByte_ISRL(uint8_t out){
 #pragma tmpdata
 
 
-uint8_t spi1ExchangeByte_(uint8_t out){
-
-    uint8_t tmp;
-
-    // Wait for transmit/receive operation to complete.
-    while (SPI1_RECEIVE_DONE == 0);
-
-    // Read received byte.
-    tmp = SPI1_BUFFER;
-
-    // Send byte to SPI.
-    SPI1_BUFFER = out;
-
-    // Return the received byte.
-    return tmp;
-}
-
-
-uint8_t spi2ExchangeByte_(uint8_t out){
-
-    uint8_t tmp;
-
-    // Wait for transmit/receive operation to complete.
-    while (SPI2_RECEIVE_DONE == 0);
-
-    // Read received byte.
-    tmp = SPI2_BUFFER;
-
-    // Send byte using SPI.
-    SPI2_BUFFER = out;
-
-    // Return the received byte.
-    return tmp;
-}
-
-
-////////////////////////////////////////////////////////////////////////
-// NOTE: Many of the functions below are using default implementations
-//       that are not very efficient because the C18 compiler cannot
-//       inline functions.  Therefore, it may be desirable to write
-//       specific implementations that can be more efficient.
-////////////////////////////////////////////////////////////////////////
-
-
-uint8_t spi1ReadByte(){
-    return spi1ExchangeByte(0);
-}
-
-
-uint8_t spi2ReadByte(){
-    return spi2ExchangeByte(0);
-}
-
-
-uint8_t spi1ReadByte_(){
-    return spi1ExchangeByte_(0);
-}
-
-
-uint8_t spi2ReadByte_(){
-    return spi2ExchangeByte_(0);
-}
-
-
-void spi1WriteByte(uint8_t out){
-    spi1ExchangeByte(out);
-}
-
-
-void spi2WriteByte(uint8_t out){
-    spi2ExchangeByte(out);
-}
-
-
-void spi1WriteByte_(uint8_t out){
-    spi1ExchangeByte_(out);
-}
-
-
-void spi2WriteByte_(uint8_t out){
-    spi2ExchangeByte_(out);
-}
-
-
 void spi1Exchange(uint8_t len, uint8_t *outPtr, uint8_t *inPtr){
 
     uint8_t i;
@@ -220,12 +136,12 @@ void spi1Exchange(uint8_t len, uint8_t *outPtr, uint8_t *inPtr){
     // inPtr == null
     } else if (outPtr){
         for (i = 0; i < len; ++i){
-            spi1WriteByte(outPtr[i]);
+            spi1ExchangeByte(outPtr[i]);
         }
     // outPtr == null
     } else if (inPtr){
         for (i = 0; i < len; ++i){
-            inPtr[i] = spi1ReadByte();
+            inPtr[i] = spi1ExchangeByte(0);
         }
     }
 }
@@ -243,12 +159,12 @@ void spi2Exchange(uint8_t len, uint8_t *outPtr, uint8_t *inPtr){
     // inPtr == null
     } else if (outPtr){
         for (i = 0; i < len; ++i){
-            spi2WriteByte(outPtr[i]);
+            spi2ExchangeByte(outPtr[i]);
         }
     // outPtr == null
     } else if (inPtr){
         for (i = 0; i < len; ++i){
-            inPtr[i] = spi2ReadByte();
+            inPtr[i] = spi2ExchangeByte(0);
         }
     }
 }
