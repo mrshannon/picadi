@@ -3,11 +3,9 @@
 // Header: util.h
 // Author: Michael R. Shannon
 // Written: Sunday, November 15, 2015
-// Updated: Monday, November 30, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
-// Fosc: 10 MHz
-// Instruction Clock: Fosc/4
 //
 // See header file for documentation.
 //

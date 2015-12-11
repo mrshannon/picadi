@@ -2,13 +2,12 @@
 // File: util.h
 // Author: Michael R. Shannon
 // Written: Sunday, November 15, 2015
-// Updated: Monday, November 30, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
-// Fosc: 10 MHz
-// Instruction Clock: Fosc/4
 // Description:
-//      A library for utility functions.
+//      A library for utility functions such as delays, string loading,
+//      and atomic macros.
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -23,9 +22,7 @@
 #define UTIL_H
 
 
-#define PI 3.14159265f
-
-
+// 1 byte conversion union
 union bytes1 {
     int8_t int8;
     uint8_t uint8;
@@ -42,6 +39,7 @@ union bytes1 {
 };
 
 
+// 2 byte conversion union
 union bytes2 {
     int16_t int16;
     uint16_t uint16;
@@ -74,6 +72,7 @@ union bytes2 {
 };
 
 
+// 3 byte conversion union
 union bytes3 {
     int24_t int24;
     uint24_t uint24;
@@ -116,6 +115,7 @@ union bytes3 {
 };
 
 
+// 4 byte conversion union
 union bytes4 {
     float float32;
     int32_t int32;
@@ -187,7 +187,7 @@ union bytes4 {
 //      Delay by a given number of milliseconds between 0 and 255.
 //
 // Input:
-//      uint_t ms:
+//      uint8_t ms:
 //          Number of milliseconds to busy wait for.
 //
 void delayxms(uint8_t ms);
@@ -197,7 +197,7 @@ void delayxms(uint8_t ms);
 //      Delay by a given number of seconds.
 //
 // Input:
-//      uint_t ms:
+//      uint8_t s:
 //          Number of seconds to busy wait for.
 //
 void delayxs(uint8_t s);
