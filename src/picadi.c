@@ -19,7 +19,6 @@
 #include "util.h"
 #include "stdint.h"
 #include "stdbool.h"
-#include "mathlib.h"
 #include "oled.h"
 #include "efis.h"
 #include "imu.h"
@@ -75,9 +74,6 @@ void main(){
 
         /* // Update AHRS solution. */
         valid = ahrsUpdate(&yaw, &pitch, &roll);
-
-        // Clear the frame buffer.
-        glClear();
 
         // Write the EFIS to the frame buffer.
         efisDraw(yaw, pitch, roll, valid);
