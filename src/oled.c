@@ -3,7 +3,7 @@
 // Header: oled.h
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Sunday, November 15, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -119,7 +119,7 @@ extern uint8_t frameBuffer[OLED_SIZE];
 
 
 ////////////////////////////////////////////////////////////////////////
-// Adressing OLED Commands (low level)
+// Addressing OLED Commands (low level)
 ////////////////////////////////////////////////////////////////////////
 
 // Only horizontal addressing mode commands are implemented here as the
@@ -146,7 +146,7 @@ extern uint8_t frameBuffer[OLED_SIZE];
         spi2ExchangeByte(end); \
     )
 
-// Set page range (horizontal or verical addressing mode).
+// Set page range (horizontal or vertical addressing mode).
 #define OLED_PAGE_RANGE(start, end) OLED_COMMAND( \
         spi2ExchangeByte(0x22); \
         spi2ExchangeByte(start); \
@@ -177,7 +177,7 @@ extern uint8_t frameBuffer[OLED_SIZE];
 #define OLED_NORMAL_ROW() oledSendCommand(0xC0)
 #define OLED_REVERSE_ROW() oledSendCommand(0xC8)
 
-// Set verticel offset from 0 to 63.
+// Set vertical offset from 0 to 63.
 #define OLED_VERTICAL_OFFSET(offset) OLED_COMMAND( \
         spi2ExchangeByte(0xD3); \
         spi2ExchangeByte(offset); \
@@ -275,7 +275,7 @@ static void __oledInitCom(void){
 
 
 // Description:
-//      Send intilization/configuration bytes to the OLED controller.
+//      Send initialization/configuration bytes to the OLED controller.
 //
 static void __oledWriteInit(void){
 

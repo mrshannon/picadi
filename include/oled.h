@@ -2,7 +2,7 @@
 // File: oled.h
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Friday, November 13, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 // Description:
@@ -11,6 +11,9 @@
 //
 //      Some of this library is a modification of the Adafuit_SSD1306
 //      library written is C++ for the Arduino.
+//
+//      OLED Controller Datasheet:
+//      https://www.adafruit.com/datasheets/SSD1306.pdf
 //
 ////////////////////////////////////////////////////////////////////////
 
@@ -26,13 +29,13 @@
 //       memory layout.
 
 
-#define OLED_WIDTH 128
-#define OLED_HEIGHT 64
-#define OLED_SIZE (OLED_WIDTH * OLED_HEIGHT / 8)
+#define OLED_WIDTH 128 // in pixels
+#define OLED_HEIGHT 64 // in pixels
+#define OLED_SIZE (OLED_WIDTH * OLED_HEIGHT / 8) // total number of pixels
 
 
 // Description:
-//      Initilize SPI2 and OLED display.
+//      Initialize SPI2 and OLED display.
 //
 void oledInit(void);
 
