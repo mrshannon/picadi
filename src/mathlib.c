@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////
-// File: graphics.c
-// Header: graphics.h
+// File: mathlib.c
+// Header: mathlib.h
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Sunday, November 15, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -18,6 +18,7 @@
 #include "mathlib.h"
 
 
+// Sine table, 0 to 90 degrees, output scaled from 0 to 32767.
 static const int16_t sin16_table[TRIG16_TABLE_SIZE+1] = {
         0,  1608,  3212,  4808,  6393,  7962,  9512, 11039,
     12539, 14010, 15446, 16846, 18204, 19519, 20787, 22005,
@@ -27,7 +28,7 @@ static const int16_t sin16_table[TRIG16_TABLE_SIZE+1] = {
 };
 
 
-// 16384 equals 45 degrees, divide by 8 to get actual angle
+// NOTE: 16384 equals 45 degrees, divide by 8 to get actual angle.
 static const int16_t atan16_table[TRIG16_TABLE_SIZE+1] = {
         0,   652,  1302,  1950,  2594,  3233,  3866,  4493,
      5110,  5719,  6318,  6907,  7484,  8050,  8603,  9144,
@@ -118,10 +119,11 @@ int32_t tan16(int16_t theta){
 
 
 // Description:
-//      Internal only version of arctangent.
+//      Internal only version of arctangent.  Can be broken easily if
+//      input conditions are not met.
 //
 // Input:
-//      int16_t xy:
+//      int16_t yx:
 //          y/x scaled from 0 to 1 to 0 to 32767.  All inputs are
 //          in first octant.
 //
@@ -199,8 +201,11 @@ void rotate16_(int16_t *xPtr, int16_t *yPtr, int16_t s, int16_t c){
 
 
 int16_t yIntercept(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x){
+
     int32_t num, dom;
+
     num = ((int32_t)(x - x0)) * ((int32_t)(y1 - y0));
     dom = (int32_t)(x1 - x0);
+
     return num/dom + y0;
 }
