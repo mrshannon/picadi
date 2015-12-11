@@ -2,11 +2,9 @@
 // File: led.h
 // Author: Michael R. Shannon
 // Written: Tuesday, November 10, 2015
-// Updated: Sunday, November 15, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
-// Fosc: 10 MHz
-// Instruction Clock: Fosc/4
 // Description:
 //      A library to handle initialization and timing of the LEDs.
 //
