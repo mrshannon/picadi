@@ -4,12 +4,13 @@
 // File: pacadi.c
 // Author: Michael R. Shannon
 // Written: Thursday, November 12, 2015
-// Updated: Tuesday, December 08, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
 // NOTE: The LED and LCD libraries are not actually used.  There where
-// included in this project to aid with debugging.
+//       included in this project to aid with debugging but are not used
+//       in the production code.
 //
 ////////////////////////////////////////////////////////////////////////
 
