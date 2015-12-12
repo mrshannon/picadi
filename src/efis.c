@@ -3,7 +3,7 @@
 // Header: efis.h
 // Author: Michael R. Shannon
 // Written: Monday, November 30, 2015
-// Updated: Tuesday, December 08, 2015
+// Updated: Friday, December 11, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -18,12 +18,13 @@
 #include "stdbool.h"
 #include "mathlib.h"
 #include "util.h"
+#include "graphics.h"
 #include "efis.h"
 
 
-#define CENTER_X GL_FRAME_WIDTH/2
-#define CENTER_Y GL_FRAME_HEIGHT/2
-#define PLANE_RADIUS 3
+#define CENTER_X GL_FRAME_WIDTH/2   // center of frame buffer - x
+#define CENTER_Y GL_FRAME_HEIGHT/2  // center of frame buffer - y
+#define PLANE_RADIUS 3  // radius of plane symbol
 #define PIX_PER_DEG 2   // pixels per degree of pitch
 
 
@@ -77,7 +78,8 @@ void efisDrawCompass(int16_t yaw){
     sprintf(buffer, STR("%03d"), yaw);
     buffer[3] = '\0';
 
-    // Write string buffer to the frame buffer.
+    // Write string buffer to the frame buffer (with background
+    // rectangle).
     glRectFill_(CENTER_X-GL_CHAR_WIDTH-2, 0,
                 CENTER_X+2*GL_CHAR_WIDTH+2, GL_CHAR_HEIGHT+2,
                 GL_COLOR_BLACK);
@@ -163,9 +165,6 @@ void efisDrawPitch(int16_t pitch, int16_t rollSin, int16_t rollCos){
 }
 
 
-#define ROLL_ANGLE_START ((int16_t)(((int32_t)TRIG16_CYCLE)*(-60)/360))
-#define ROLL_ANGLE_STOP ((int16_t)(((int32_t)TRIG16_CYCLE)*(+60)/360))
-#define ROLL_ANGLE_STEP ((int16_t)(((int32_t)TRIG16_CYCLE)*(60)/360))
 void efisDrawRoll(int16_t roll){
 
     // Draw pointing triangle.
@@ -305,14 +304,6 @@ bool efisHorizon(int16_t pitch, int16_t rollSin, int16_t rollCos,
 }
 
 
-// Determine points to draw and whether it is sky or ground.
-//
-// The two horizon points will always be returned first.
-//
-// The number of points in the polygon is returned.  If the polygon is
-// for the sky this number is positive, if the polygon is for the
-// ground it is negative.
-//
 // Inverted from side of line algorithm at:
 //      http://math.stackexchange.com/a/274728
 #define EFIS_SIDE_OF_LINE(x, y) ((y - y0)*(x1 - x0) - (x - x0)*(y1 - y0))
@@ -404,7 +395,6 @@ void efisDrawHorizonAsPolygon(uint8_t xa[4], uint8_t ya[4], uint8_t color){
             peak = (xa[0] > xa[1]) ? 0 : 1;
             // Draw rectangle.
             glRectFill_(GL_MIN_X, GL_MIN_Y, xa[!peak], GL_MAX_Y, color);
-            /* glRectFill_(GL_MIN_X, GL_MIN_Y, 10, GL_MAX_Y, color); */
 
         // Drawing right side of frame buffer.
         } else {
