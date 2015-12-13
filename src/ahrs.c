@@ -3,7 +3,7 @@
 // Header: ahrs.h
 // Author: Michael R. Shannon
 // Written: Sunday, December 06, 2015
-// Updated: Tuesday, December 08, 2015
+// Updated: Saturday, December 12, 2015
 // Device: PIC18F87K22
 // Compiler: C18
 //
@@ -77,6 +77,7 @@ bool ahrsUpdate(int16_t *yaw, int16_t *pitch, int16_t *roll){
         return false; // possible errors
     }
 
+    // Result is valid.
     return true;
 }
 
