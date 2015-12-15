@@ -1,11 +1,22 @@
 #!/bin/env python3
 
+########################################################################
+## PIC ADI Image 2 C Array Converter
+##
+## Author: Michael R. Shannon
+##
+## This program is meant to be called from the command line.
+##
+########################################################################
+
+
 import sys
 from PIL import Image
 from bitarray import bitarray
 
 
 def to_array(filename):
+    """Load monochrome image into a bitarray."""
     bit_array = bitarray(endian="little")
     with Image.open(filename) as im:
         pixels = im.load()
@@ -16,6 +27,7 @@ def to_array(filename):
 
 
 def chunks(array, length):
+    """Turn array into iterable of given chunk length."""
     chunk = [None]*length
     idx = 0
     for v in array:
@@ -26,6 +38,7 @@ def chunks(array, length):
 
 
 def print_array(array):
+    """Print array as a C style uint8_t array of size OLED_SIZE."""
     print("uint8_t frameBuffer[OLED_SIZE] = {")
     for line in chunks(array, 8):
         print(("   " + " 0x{:02X},"*8).format(*line))
@@ -33,6 +46,7 @@ def print_array(array):
 
 
 def check_size(filename):
+    """Make sure image given by <filename> is 128x64 pixels."""
     with Image.open(filename) as im:
         if im.size != (128, 64):
             print("Expected image of 128x64, got {}x{}".format(*im.size))
@@ -41,6 +55,7 @@ def check_size(filename):
 
 
 def convert_image(filename):
+    """Convert monochrome image given by <filename> and print C array."""
     if check_size(filename):
         return
     byte_array = to_array(filename)
@@ -48,6 +63,7 @@ def convert_image(filename):
 
 
 if __name__ == "__main__":
+    """Handle parsing of filename from terminal argument and convert."""
     try:
         filename = sys.argv[1]
     except IndexError:
